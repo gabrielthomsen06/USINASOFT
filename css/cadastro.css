@@ -1,0 +1,62 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+}
+
+.titulo {
+  padding: 20px;
+  margin: 0;
+}
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.form-box {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  min-width: 300px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.form-box label {
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+}
+
+.form-box input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.form-box button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background-color: #f15a29;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.proxima-pagina {
+  display: inline-block;
+  margin-top: 20px;
+  color: #f15a29;
+  font-weight: bold;
+  text-decoration: none;
+}

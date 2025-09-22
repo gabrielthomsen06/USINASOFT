@@ -1,0 +1,29 @@
+<% 
+// Parâmetros esperados:
+// - text: texto do botão
+// - type: tipo do botão (primary, secondary, outline, danger)
+// - size: tamanho (sm, md, lg)
+// - href: se fornecido, renderiza como link
+// - onclick: função JavaScript
+// - disabled: se o botão está desabilitado
+// - icon: ícone opcional
+%>
+
+<% 
+const buttonClass = [
+    'btn',
+    `btn-${type || 'primary'}`,
+    `btn-${size || 'md'}`,
+    disabled ? 'btn-disabled' : ''
+].filter(Boolean).join(' ');
+
+const tag = href ? 'a' : 'button';
+const attributes = href ? `href="${href}"` : (onclick ? `onclick="${onclick}"` : '');
+%>
+
+<<%= tag %> class="<%= buttonClass %>" <%= attributes %> <%= disabled ? 'disabled' : '' %>>
+    <% if (icon) { %>
+        <span class="btn-icon"><%= icon %></span>
+    <% } %>
+    <%= text %>
+</<%= tag %>>

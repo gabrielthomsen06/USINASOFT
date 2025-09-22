@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'UsinaSoft' %></title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- UsinaSoft Custom CSS -->
+    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css">
+</head>
+<body class="login-page">
+    <%- include('partials/header', { user: user, showNav: true, currentPage: 'cadastro' }) %>
+    
+    <main class="main-content">
+        <div class="container py-5">
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-usinasoft-primary mb-3">Cadastro de Peças</h1>
+                <p class="lead text-muted">Registre novas peças e ordens de produção</p>
+            </div>
+            
+            <!-- Form Card -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-white border-0 text-center py-4">
+                            <h2 class="card-title h4 mb-0">Informações da Peça</h2>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            <!-- Success Message -->
+                            <% if (typeof success !== 'undefined' && success) { %>
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Peça cadastrada com sucesso!
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            <% } %>
+                            
+                            <!-- Error Message -->
+                            <% if (typeof error !== 'undefined' && error) { %>
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <%= error %>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            <% } %>
+                            
+                            <!-- Form -->
+                            <form method="POST" action="/cadastro" data-validate>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="cliente" class="form-label">Cliente <span class="text-danger">*</span></label>
+                                        <input 
+                                            type="text" 
+                                            id="cliente" 
+                                            name="cliente" 
+                                            class="form-control" 
+                                            placeholder="Nome do Cliente"
+                                            required
+                                        >
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="numeroPedido" class="form-label">Número do Pedido <span class="text-danger">*</span></label>
+                                        <input 
+                                            type="text" 
+                                            id="numeroPedido" 
+                                            name="numeroPedido" 
+                                            class="form-control" 
+                                            placeholder="Número do Pedido"
+                                            required
+                                        >
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="codigoPeca" class="form-label">Código da Peça <span class="text-danger">*</span></label>
+                                        <input 
+                                            type="text" 
+                                            id="codigoPeca" 
+                                            name="codigoPeca" 
+                                            class="form-control" 
+                                            placeholder="Código da Peça"
+                                            required
+                                        >
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="quantidade" class="form-label">Quantidade <span class="text-danger">*</span></label>
+                                        <input 
+                                            type="number" 
+                                            id="quantidade" 
+                                            name="quantidade" 
+                                            class="form-control" 
+                                            placeholder="Ex: 138"
+                                            min="1"
+                                            required
+                                        >
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="dataEntrega" class="form-label">Data de Entrega <span class="text-danger">*</span></label>
+                                        <input 
+                                            type="date" 
+                                            id="dataEntrega" 
+                                            name="dataEntrega" 
+                                            class="form-control"
+                                            required
+                                        >
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="prioridade" class="form-label">Prioridade</label>
+                                        <select id="prioridade" name="prioridade" class="form-select">
+                                            <option value="">Selecione a prioridade</option>
+                                            <option value="baixa">Baixa</option>
+                                            <option value="media">Média</option>
+                                            <option value="alta">Alta</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="observacoes" class="form-label">Observações</label>
+                                    <textarea 
+                                        id="observacoes" 
+                                        name="observacoes" 
+                                        class="form-control" 
+                                        rows="4"
+                                        placeholder="Observações adicionais sobre a peça ou pedido"
+                                    ></textarea>
+                                </div>
+                                
+                                <div class="d-flex gap-3 justify-content-end">
+                                    <button type="button" class="btn btn-secondary" onclick="history.back()">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        Cadastrar Peça
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    
+    <%- include('partials/footer') %>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

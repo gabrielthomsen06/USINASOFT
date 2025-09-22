@@ -1,0 +1,64 @@
+<header class="navbar navbar-expand-lg navbar-dark bg-usinasoft-primary shadow-sm">
+    <div class="container-fluid">
+        <!-- Brand -->
+        <div class="navbar-brand d-flex align-items-center">
+            <img src="/img/fabrica.png" alt="UsinaSoft" class="me-2" style="width: 40px; height: 40px;">
+            <span class="fw-bold fs-4">UsinaSoft</span>
+        </div>
+        
+        <!-- User Info (Desktop) -->
+        <% if (typeof user !== 'undefined' && user) { %>
+            <div class="d-none d-lg-flex align-items-center">
+                <span class="text-white me-3">Olá, <%= user.name %></span>
+                <a href="/logout" class="btn btn-outline-light btn-sm">Sair</a>
+            </div>
+        <% } %>
+        
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</header>
+
+<!-- Navigation -->
+<% if (typeof showNav !== 'undefined' && showNav) { %>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-usinasoft-primary border-top">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav w-100 d-flex justify-content-between">
+                    <li class="nav-item">
+                        <a href="/menu" class="nav-link d-flex flex-column align-items-center py-3 <%= currentPage === 'menu' ? 'active' : '' %>">
+                            <span class="nav-icon">🏠</span>
+                            <span class="nav-text">Menu Principal</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/cadastro" class="nav-link d-flex flex-column align-items-center py-3 <%= currentPage === 'cadastro' ? 'active' : '' %>">
+                            <span class="nav-icon">📝</span>
+                            <span class="nav-text">Cadastrar Peças</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/atividades" class="nav-link d-flex flex-column align-items-center py-3 <%= currentPage === 'atividades' ? 'active' : '' %>">
+                            <span class="nav-icon">📋</span>
+                            <span class="nav-text">Controle de Atividades</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/producao" class="nav-link d-flex flex-column align-items-center py-3 <%= currentPage === 'producao' ? 'active' : '' %>">
+                            <span class="nav-icon">⚙️</span>
+                            <span class="nav-text">Controle de Produção</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/indicadores" class="nav-link d-flex flex-column align-items-center py-3 <%= currentPage === 'indicadores' ? 'active' : '' %>">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">Indicadores</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+<% } %>

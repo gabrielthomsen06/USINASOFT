@@ -1,0 +1,27 @@
+<% 
+// Parâmetros esperados:
+// - title: título do card
+// - content: conteúdo principal
+// - actions: array de ações (botões)
+// - class: classes CSS adicionais
+%>
+
+<div class="card <%= class || '' %>">
+    <% if (title) { %>
+        <div class="card-header">
+            <h3 class="card-title"><%= title %></h3>
+        </div>
+    <% } %>
+    
+    <div class="card-body">
+        <%- content %>
+    </div>
+    
+    <% if (actions && actions.length > 0) { %>
+        <div class="card-footer">
+            <% actions.forEach(action => { %>
+                <%- include('../components/button', action) %>
+            <% }); %>
+        </div>
+    <% } %>
+</div>

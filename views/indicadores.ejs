@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'UsinaSoft' %></title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- UsinaSoft Custom CSS -->
+    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css">
+</head>
+<body class="login-page">
+    <%- include('partials/header', { user: user, showNav: true, currentPage: 'indicadores' }) %>
+    
+    <main class="main-content">
+        <div class="container py-5">
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-usinasoft-primary mb-3">Indicadores de Produção</h1>
+                <p class="lead text-muted">Visualize métricas e relatórios de produção</p>
+            </div>
+    
+            <!-- Filtros -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Filtros de Período</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label for="dataInicio" class="form-label">Data Início:</label>
+                                    <input type="date" id="dataInicio" class="form-control" onchange="atualizarGrafico()">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="dataFim" class="form-label">Data Fim:</label>
+                                    <input type="date" id="dataFim" class="form-control" onchange="atualizarGrafico()">
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-primary w-100" onclick="atualizarGrafico()">
+                                        Atualizar Gráfico
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Indicadores -->
+            <div class="row g-4">
+                <!-- Gráfico de Status -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Status de Produção</h5>
+                            <div class="d-flex gap-3">
+                                <span class="badge bg-secondary">Em Fila: <%= indicadores.emFila %></span>
+                                <span class="badge bg-warning text-dark">Em Andamento: <%= indicadores.emAndamento %></span>
+                                <span class="badge bg-success">Concluídas: <%= indicadores.concluidas %></span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="bg-secondary rounded mb-2" style="width: 60px; height: <%= (indicadores.emFila / Math.max(indicadores.emFila, indicadores.emAndamento, indicadores.concluidas)) * 200 %>px;"></div>
+                                        <div class="fw-bold text-secondary"><%= indicadores.emFila %></div>
+                                        <div class="small text-muted">Em Fila</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="bg-warning rounded mb-2" style="width: 60px; height: <%= (indicadores.emAndamento / Math.max(indicadores.emFila, indicadores.emAndamento, indicadores.concluidas)) * 200 %>px;"></div>
+                                        <div class="fw-bold text-warning"><%= indicadores.emAndamento %></div>
+                                        <div class="small text-muted">Em Andamento</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="bg-success rounded mb-2" style="width: 60px; height: <%= (indicadores.concluidas / Math.max(indicadores.emFila, indicadores.emAndamento, indicadores.concluidas)) * 200 %>px;"></div>
+                                        <div class="fw-bold text-success"><%= indicadores.concluidas %></div>
+                                        <div class="small text-muted">Concluídas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cards de Estatísticas -->
+                <div class="col-lg-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <div class="display-6 text-primary mb-2">📊</div>
+                                    <h3 class="text-primary"><%= indicadores.emFila + indicadores.emAndamento + indicadores.concluidas %></h3>
+                                    <p class="text-muted mb-0">Total de Peças</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- <div class="col-12">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <div class="display-6 text-success mb-2">⚡</div>
+                                    <h3 class="text-success"><%= Math.round((indicadores.concluidas / (indicadores.emFila + indicadores.emAndamento + indicadores.concluidas)) * 100) %>%</h3>
+                                    <p class="text-muted mb-0">Taxa de Conclusão</p>
+                                </div>
+                            </div>
+                        </div> -->
+                        
+                        <!-- <div class="col-12">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <div class="display-6 text-warning mb-2">⏱️</div>
+                                    <h3 class="text-warning">3.2</h3>
+                                    <p class="text-muted mb-0">Dias por Peça</p>
+                                </div>
+                            </div>
+                        </div> -->
+                        
+                        <!-- <div class="col-12">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <div class="display-6 text-info mb-2">🎯</div>
+                                    <h3 class="text-info">87%</h3>
+                                    <p class="text-muted mb-0">Eficiência</p>
+                                </div>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    
+    <%- include('partials/footer') %>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+    
+    <script>
+        function atualizarGrafico() {
+            const dataInicio = document.getElementById('dataInicio').value;
+            const dataFim = document.getElementById('dataFim').value;
+            
+            console.log('Atualizando gráfico com período:', dataInicio, 'até', dataFim);
+            
+            // Aqui você implementaria a lógica para buscar dados do período selecionado
+            // Por enquanto, apenas mostra um alerta
+            if (dataInicio && dataFim) {
+                alert(`Gráfico atualizado para o período: ${dataInicio} até ${dataFim}`);
+            } else {
+                alert('Selecione as datas de início e fim para filtrar o gráfico');
+            }
+        }
+
+        // Definir data padrão (últimos 30 dias)
+        document.addEventListener('DOMContentLoaded', function() {
+            const hoje = new Date();
+            const trintaDiasAtras = new Date(hoje.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            document.getElementById('dataFim').value = hoje.toISOString().split('T')[0];
+            document.getElementById('dataInicio').value = trintaDiasAtras.toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>

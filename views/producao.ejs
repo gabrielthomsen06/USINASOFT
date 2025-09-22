@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'UsinaSoft' %></title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- UsinaSoft Custom CSS -->
+    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css">
+</head>
+<body class="login-page">
+    <%- include('partials/header', { user: user, showNav: true, currentPage: 'producao' }) %>
+    
+    <main class="main-content">
+        <div class="container py-5">
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-usinasoft-primary mb-3">Controle de Produção</h1>
+                <p class="lead text-muted">Gerencie a fila de produção e status das peças</p>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Filtros Sidebar -->
+                <div class="col-lg-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Filtros e Configurações</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="filtroCodigo" class="form-label">Código da Peça:</label>
+                                <input 
+                                    type="text" 
+                                    id="filtroCodigo" 
+                                    class="form-control" 
+                                    placeholder="Buscar por código"
+                                    onkeyup="filtrarProducao()"
+                                >
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Status da Produção:</label>
+                                <div class="form-check">
+                                    <input type="checkbox" id="filtroFila" class="form-check-input" onchange="filtrarProducao()">
+                                    <label for="filtroFila" class="form-check-label">Em Fila</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" id="filtroAndamento" class="form-check-input" onchange="filtrarProducao()">
+                                    <label for="filtroAndamento" class="form-check-label">Em Andamento</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" id="filtroConcluido" class="form-check-input" onchange="filtrarProducao()">
+                                    <label for="filtroConcluido" class="form-check-label">Concluído</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="filtroData" class="form-label">Data de Entrega:</label>
+                                <input 
+                                    type="date" 
+                                    id="filtroData" 
+                                    class="form-control"
+                                    onchange="filtrarProducao()"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="col-lg-9">
+                    <!-- Stats Header -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <h3 class="text-primary"><%= producao.length %></h3>
+                                    <p class="text-muted mb-0">Total</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h3 class="text-warning"><%= producao.filter(p => p.status === 'andamento').length %></h3>
+                                    <p class="text-muted mb-0">Em Andamento</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h3 class="text-success"><%= producao.filter(p => p.status === 'concluido').length %></h3>
+                                    <p class="text-muted mb-0">Concluídos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Production Cards -->
+                    <div class="row g-3" id="producaoCards">
+                        <% producao.forEach(item => { %>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 producao-card" data-status="<%= item.status %>" data-codigo="<%= item.codigo %>" data-data="<%= item.dataEntrega %>">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="card-title mb-0"><%= item.nome %></h6>
+                                        <span class="badge <%= item.status === 'andamento' ? 'bg-warning text-dark' : 
+                                            item.status === 'concluido' ? 'bg-success' : 'bg-secondary' %>">
+                                            <%= item.status === 'andamento' ? 'Em Andamento' : 
+                                                item.status === 'concluido' ? 'Concluído' : 'Em Fila' %>
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <strong>Código:</strong> <%= item.codigo %>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Data de Entrega:</strong> <%= item.dataEntrega %>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-primary btn-sm" onclick="editarProducao(<%= item.id %>)">
+                                                Editar
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="removerProducao(<%= item.id %>)">
+                                                Remover
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    
+    <%- include('partials/footer') %>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+    
+    <script>
+        function filtrarProducao() {
+            const filtroCodigo = document.getElementById('filtroCodigo').value.toLowerCase();
+            const filtroData = document.getElementById('filtroData').value;
+            const filtroFila = document.getElementById('filtroFila').checked;
+            const filtroAndamento = document.getElementById('filtroAndamento').checked;
+            const filtroConcluido = document.getElementById('filtroConcluido').checked;
+            
+            const cards = document.querySelectorAll('.producao-card');
+            
+            cards.forEach(card => {
+                const codigo = card.dataset.codigo.toLowerCase();
+                const data = card.dataset.data;
+                const status = card.dataset.status;
+                
+                let mostrar = true;
+                
+                // Filtro por código
+                if (filtroCodigo && !codigo.includes(filtroCodigo)) {
+                    mostrar = false;
+                }
+                
+                // Filtro por data
+                if (filtroData && data !== filtroData) {
+                    mostrar = false;
+                }
+                
+                // Filtro por status
+                if ((filtroFila || filtroAndamento || filtroConcluido)) {
+                    const statusSelecionado = 
+                        (filtroFila && status === 'fila') ||
+                        (filtroAndamento && status === 'andamento') ||
+                        (filtroConcluido && status === 'concluido');
+                    
+                    if (!statusSelecionado) {
+                        mostrar = false;
+                    }
+                }
+                
+                card.closest('.col-md-6').style.display = mostrar ? 'block' : 'none';
+            });
+        }
+
+        function editarProducao(id) {
+            console.log(`Editando produção ${id}`);
+            // Implementar lógica de edição
+        }
+
+        function removerProducao(id) {
+            if (confirm('Tem certeza que deseja remover este item da produção?')) {
+                console.log(`Removendo produção ${id}`);
+                // Implementar lógica de remoção
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

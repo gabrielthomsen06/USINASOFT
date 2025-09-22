@@ -1,0 +1,36 @@
+<nav class="navigation">
+    <div class="nav-container">
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="/menu" class="nav-link <%= currentPage === 'menu' ? 'active' : '' %>">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Menu Principal</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/cadastro" class="nav-link <%= currentPage === 'cadastro' ? 'active' : '' %>">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-text">Cadastrar Peças</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/atividades" class="nav-link <%= currentPage === 'atividades' ? 'active' : '' %>">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Controle de Atividades</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/producao" class="nav-link <%= currentPage === 'producao' ? 'active' : '' %>">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Controle de Produção</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/indicadores" class="nav-link <%= currentPage === 'indicadores' ? 'active' : '' %>">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Indicadores</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

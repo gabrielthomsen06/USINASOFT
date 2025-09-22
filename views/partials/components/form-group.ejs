@@ -1,0 +1,35 @@
+<% 
+// Parâmetros esperados:
+// - label: texto do label
+// - name: nome do campo
+// - type: tipo do input
+// - placeholder: placeholder
+// - value: valor inicial
+// - required: se é obrigatório
+// - error: mensagem de erro
+%>
+
+<div class="form-group">
+    <% if (typeof label !== 'undefined' && label) { %>
+        <label for="<%= name %>" class="form-label">
+            <%= label %>
+            <% if (typeof required !== 'undefined' && required) { %>
+                <span class="required">*</span>
+            <% } %>
+        </label>
+    <% } %>
+    
+    <input 
+        type="<%= typeof type !== 'undefined' ? type : 'text' %>" 
+        id="<%= name %>" 
+        name="<%= name %>" 
+        class="form-input <%= typeof error !== 'undefined' && error ? 'error' : '' %>"
+        placeholder="<%= typeof placeholder !== 'undefined' ? placeholder : '' %>"
+        value="<%= typeof value !== 'undefined' ? value : '' %>"
+        <%= typeof required !== 'undefined' && required ? 'required' : '' %>
+    >
+    
+    <% if (typeof error !== 'undefined' && error) { %>
+        <span class="form-error"><%= error %></span>
+    <% } %>
+</div>

@@ -1,0 +1,70 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f3f3f3;
+}
+
+header {
+  background-color: #fff;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+header h2 {
+  margin: 0;
+}
+
+.funcionario {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.kanban {
+  display: flex;
+  gap: 20px;
+  padding: 30px;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.kanban section {
+  flex: 1;
+  min-width: 280px;
+}
+
+.kanban h3 {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+}
+
+.card {
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.card strong {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.card p {
+  color: #888;
+  margin: 6px 0;
+}
+
+.status {
+  display: inline-block;
+  background-color: #f15a29;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  margin: 10px 0;
+}

@@ -2,7 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
+const { API_BASE_URL } = require('./configs');
+const api = require('./configs/api');
+const { title } = require('process');
+const { error } = require('console');
 
+// const { API_BASE_URL } = require('./configs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -220,26 +225,37 @@ app.get('/atividades', requireAuth, (req, res) => {
   });
 });
 
-app.get('/producao', requireAuth, (req, res) => {
-  // Dados mockados para produção
-  const producao = [
-    { id: 1, nome: 'Montagem de engrenagem', codigo: 'GA-001', status: 'andamento', dataEntrega: '15/11/2023' },
-    { id: 2, nome: 'Placa de Circuito', codigo: 'CB-002', status: 'concluido', dataEntrega: '10/10/2023' },
-    { id: 3, nome: 'Estrutura da máquina', codigo: 'MF-003', status: 'andamento', dataEntrega: '20/12/2023' },
-    { id: 4, nome: 'Bucha de Rolamento', codigo: 'BR-005', status: 'fila', dataEntrega: '30/11/2023' },
-    { id: 5, nome: 'Pino de Fixação', codigo: 'PN-006', status: 'concluido', dataEntrega: '28/11/2023' }
-  ];
 
-  res.render('producao', { 
-    title: 'Controle de Produção - UsinaSoft',
-    user: req.session.user,
-    showHeader: true,
-    showNav: true,
-    showFooter: true,
-    currentPage: 'producao',
-    producao
-  });
+//ROTA DE PRODUCAO /producao
+app.get('/producao', requireAuth, async (req, res) => {
+   try {
+    const response = await api.get('/ops/');
+    const producao = response.data;
+
+      res.render('producao', { 
+      title: 'Controle de Produção - UsinaSoft',
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: 'producao',
+      producao
+    });
+    } catch (error) {
+    console.error('Erro ao buscar dados de produção:', error.message);
+    res.render('producao', { 
+      title: 'Controle de Produção - UsinaSoft',
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: 'producao',
+      producao: [],
+      error: 'Erro ao buscar dados da API'
+    });
+  }
 });
+
 
 app.get('/indicadores', requireAuth, (req, res) => {
   // Dados mockados para indicadores

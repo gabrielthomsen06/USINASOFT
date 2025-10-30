@@ -1,0 +1,3 @@
+views/atividades.ejs
+views/producao.ejs
+views/**/*.ejs

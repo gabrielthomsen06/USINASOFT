@@ -1,0 +1,9 @@
+{
+  "javascript.validate.enable": false,
+  "[ejs]": {
+    "editor.formatOnSave": false
+  },
+  "files.associations": {
+    "*.ejs": "html"
+  }
+}

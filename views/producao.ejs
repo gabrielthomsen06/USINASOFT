@@ -260,7 +260,7 @@
                     class="production-card producao-card h-100"
                     data-status="<%= item.status.toLowerCase() %>"
                     data-numero="<%= item.numero || '' %>"
-                    data-data="<%= item.data_fim_prevista || '' %>"
+                    data-data="<%= item.data_entrega || '' %>"
                   >
                     <div class="card-header-custom">
                       <div
@@ -297,9 +297,9 @@
                       <div class="info-row">
                         <i class="fas fa-calendar-alt text-muted"></i>
                         <div>
-                          <span class="info-label">Data Prevista:</span>
+                          <span class="info-label">Peças Concluídas:</span>
                           <span class="info-value">
-                            <%= formatDate(item.data_fim_prevista) %>
+                            <%= item.pecas_concluidas || 0%>
                           </span>
                         </div>
                       </div>
@@ -331,17 +331,26 @@
                       <div class="d-grid gap-2 d-sm-flex">
                         <button
                           class="btn btn-sm btn-primary"
-                          onclick="verDetalhes(<%= item.id %>)"
+                          onclick="verDetalhes('<%= item.id %>')"
                           title="Ver detalhes"
                         >
                           <i class="fas fa-eye me-1"></i>Detalhes
                         </button>
                         <button
                           class="btn btn-sm btn-outline-secondary"
-                          onclick="editarProducao(<%= item.id %>)"
+                          onclick="editarProducao('<%= item.id %>')"
                           title="Editar"
                         >
                           <i class="fas fa-edit me-1"></i>Editar
+                        </button>
+                        <button
+                          class="btn btn-sm btn-outline-danger"
+                          onclick="excluirOp(this)"
+                          data-op-id="<%= item.id %>"
+                          data-op-codigo="<%= item.codigo %>"
+                          title="Excluir"
+                        >
+                          <i class="fas fa-trash me-1"></i>Excluir
                         </button>
                       </div>
                     </div>
@@ -369,7 +378,7 @@
                     <tr>
                       <th>Número</th>
                       <th>Status</th>
-                      <th>Data Prevista</th>
+                      <th>Data de Entrega</th>
                       <th>Responsável</th>
                       <th>Criado em</th>
                       <th>Ações</th>
@@ -395,7 +404,7 @@
                           <%= getStatusLabel(item.status) %>
                         </span>
                       </td>
-                      <td><%= formatDate(item.data_fim_prevista) %></td>
+                      <td><%= formatDate(item.data_entrega) %></td>
                       <td><%= item.criado_por_nome || 'N/A' %></td>
                       <td>
                         <small> <%= formatDate(item.created_at) %> </small>
@@ -405,7 +414,7 @@
                           <button
                             type="button"
                             class="btn btn-outline-primary"
-                            onclick="verDetalhes(<%= item.id %>)"
+                            onclick="verDetalhes('<%= item.id %>')"
                             title="Ver detalhes"
                           >
                             <i class="fas fa-eye"></i>
@@ -413,10 +422,20 @@
                           <button
                             type="button"
                             class="btn btn-outline-secondary"
-                            onclick="editarProducao(<%= item.id %>)"
+                            onclick="editarProducao('<%= item.id %>')"
                             title="Editar"
                           >
                             <i class="fas fa-edit"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-outline-danger"
+                            onclick="excluirOp(this)"
+                            data-op-id="<%= item.id %>"
+                            data-op-codigo="<%= item.codigo %>"
+                            title="Excluir"
+                          >
+                            <i class="fas fa-trash"></i>
                           </button>
                         </div>
                       </td>
@@ -432,6 +451,108 @@
     </main>
 
     <%- include('partials/footer') %>
+
+    <!-- Modal de Edição de OP -->
+    <div class="modal fade" id="editarOpModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-edit me-2"></i>Editar Ordem de Produção
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="formEditarOp">
+              <input type="hidden" id="editOpId" />
+              <input type="hidden" id="editOpCliente" />
+              <div class="mb-3">
+                <label for="editCodigo" class="form-label">Código/NF *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editCodigo"
+                  required
+                  readonly
+                />
+                <small class="text-muted"
+                  >O código da OP não pode ser alterado</small
+                >
+              </div>
+              <div class="mb-3">
+                <label for="editCliente" class="form-label">Cliente *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editCliente"
+                  readonly
+                />
+                <small class="text-muted"
+                  >O cliente não pode ser alterado</small
+                >
+              </div>
+              <div class="mb-3">
+                <label for="editDataEntrega" class="form-label"
+                  >Data de Entrega</label
+                >
+                <input type="date" class="form-control" id="editDataEntrega" />
+              </div>
+              <div class="mb-3">
+                <label for="editResponsavel" class="form-label"
+                  >Responsável</label
+                >
+                <select class="form-control" id="editResponsavel">
+                  <option value="">Selecione um responsável</option>
+                </select>
+                <small class="text-muted"
+                  >Selecione o usuário responsável pela OP</small
+                >
+              </div>
+              <div class="mb-3">
+                <label for="editStatus" class="form-label">Status</label>
+                <select class="form-control" id="editStatus">
+                  <option value="aberta">Aberta</option>
+                  <option value="em_andamento">Em Andamento</option>
+                  <option value="pausada">Pausada</option>
+                  <option value="concluida">Concluída</option>
+                  <option value="cancelada">Cancelada</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="editObservacoes" class="form-label"
+                  >Observações</label
+                >
+                <textarea
+                  class="form-control"
+                  id="editObservacoes"
+                  rows="3"
+                ></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="salvarEdicaoOp()"
+            >
+              <i class="fas fa-save me-2"></i>Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -634,15 +755,139 @@
 
       // Details Function
       function verDetalhes(id) {
-        console.log(`Visualizando detalhes de ${id}`);
-        // Implementar modal ou redirecionamento
-        alert(`Detalhes da ordem #${id}`);
+        window.location.href = `/ops/${id}/detalhes`;
       }
 
       // Edit Function
-      function editarProducao(id) {
-        console.log(`Editando produção ${id}`);
-        alert(`Editar ordem #${id}`);
+      async function editarProducao(id) {
+        try {
+          // Buscar dados da OP
+          const response = await fetch(`/api/ops/${id}/`);
+          const op = await response.json();
+
+          // Buscar lista de usuários
+          const usuariosResponse = await fetch(`/api/usuarios/`);
+          const usuariosData = await usuariosResponse.json();
+          const usuarios = Array.isArray(usuariosData)
+            ? usuariosData
+            : usuariosData.results || [];
+
+          // Popular dados da OP
+          document.getElementById("editOpId").value = op.id;
+          document.getElementById("editOpCliente").value = op.cliente;
+          document.getElementById("editCodigo").value = op.codigo || "";
+          document.getElementById("editCliente").value = op.cliente_nome || "";
+          document.getElementById("editDataEntrega").value =
+            op.data_entrega || "";
+          document.getElementById("editObservacoes").value =
+            op.observacoes || "";
+          document.getElementById("editStatus").value = op.status || "aberta";
+
+          // Popular select de responsáveis
+          const selectResponsavel = document.getElementById("editResponsavel");
+          selectResponsavel.innerHTML =
+            '<option value="">Selecione um responsável</option>';
+
+          usuarios.forEach((usuario) => {
+            const option = document.createElement("option");
+            option.value = usuario.id;
+            option.textContent = `${usuario.first_name || ""} ${
+              usuario.last_name || ""
+            } (${usuario.email})`.trim();
+
+            // Selecionar o responsável atual se existir
+            if (op.responsavel && op.responsavel === usuario.id) {
+              option.selected = true;
+            }
+
+            selectResponsavel.appendChild(option);
+          });
+
+          const modal = new bootstrap.Modal(
+            document.getElementById("editarOpModal")
+          );
+          modal.show();
+        } catch (error) {
+          console.error("Erro ao carregar OP:", error);
+          alert("Erro ao carregar dados da ordem de produção");
+        }
+      }
+
+      async function salvarEdicaoOp() {
+        const id = document.getElementById("editOpId").value;
+        const cliente = document.getElementById("editOpCliente").value;
+        const codigo = document.getElementById("editCodigo").value;
+        const data_entrega = document.getElementById("editDataEntrega").value;
+        const observacoes = document.getElementById("editObservacoes").value;
+        const status = document.getElementById("editStatus").value;
+        const responsavel = document.getElementById("editResponsavel").value;
+
+        if (!cliente) {
+          alert("Cliente é obrigatório");
+          return;
+        }
+
+        const dataToSend = {
+          cliente,
+          codigo,
+          data_entrega,
+          observacoes,
+          status,
+        };
+
+        // Adicionar responsável apenas se foi selecionado
+        if (responsavel) {
+          dataToSend.responsavel = responsavel;
+        }
+
+        try {
+          const response = await fetch(`/ops/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(dataToSend),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Ordem de produção atualizada com sucesso!");
+            location.reload();
+          } else {
+            alert("Erro: " + result.error);
+          }
+        } catch (error) {
+          console.error("Erro:", error);
+          alert("Erro ao atualizar ordem de produção");
+        }
+      }
+
+      async function excluirOp(element) {
+        const id = element.dataset.opId;
+        const codigo = element.dataset.opCodigo;
+
+        if (!confirm(`Tem certeza que deseja excluir a OP "${codigo}"?`)) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/ops/${id}`, {
+            method: "DELETE",
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Ordem de produção excluída com sucesso!");
+            location.reload();
+          } else {
+            alert("Erro: " + result.error);
+          }
+        } catch (error) {
+          console.error("Erro:", error);
+          alert("Erro ao excluir ordem de produção");
+        }
       }
     </script>
   </body>

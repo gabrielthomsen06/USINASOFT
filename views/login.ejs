@@ -1,100 +1,126 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= title %></title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- UsinaSoft Custom CSS -->
-    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css">
-</head>
-<body class="login-page">
-    <div class="container-fluid d-flex align-items-center justify-content-center min-vh-100">
-        <div class="login-container w-100">
-            <!-- Header -->
-            <div class="text-center mb-5">
-                <div class="d-flex flex-column align-items-center">
-                    <img src="/img/fabrica.png" alt="UsinaSoft" class="login-logo mb-3">
-                    <h1 class="login-title mb-2">UsinaSoft</h1>
-                    <p class="login-subtitle">Sistema de Gestão de Usinagem</p>
-                </div>
-            </div>
-            
-            <!-- Login Card -->
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-white border-0 text-center py-4">
-                    <h2 class="card-title h4 mb-0">Acesso ao Sistema</h2>
-                </div>
-                
-                <div class="card-body p-4">
-                    <!-- Alerts -->
-                    <% if (typeof error !== 'undefined' && error) { %>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <%= error %>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    <% } %>
-                    
-                    <% if (typeof success !== 'undefined' && success) { %>
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <%= success %>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    <% } %>
-                    
-                    <!-- Login Form -->
-                    <form method="POST" action="/login" class="mb-4">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input 
-                                type="email" 
-                                id="email" 
-                                name="email" 
-                                class="form-control form-control-lg" 
-                                placeholder="Digite seu email"
-                                required
-                            >
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="password" class="form-label">Senha</label>
-                            <input 
-                                type="password" 
-                                id="password" 
-                                name="password" 
-                                class="form-control form-control-lg" 
-                                placeholder="Digite sua senha"
-                                required
-                            >
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                Entrar
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <!-- Divider -->
-                    <div class="position-relative text-center my-4">
-                        <hr class="my-4">
-                        <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">ou</span>
-                    </div>
-                    
-                    <!-- Register Link -->
-                    <div class="text-center">
-                        <p class="text-muted mb-3">Não tem uma conta?</p>
-                        <a href="/cadastro-usuario" class="btn btn-outline-primary btn-lg">
-                            Criar Conta
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css" />
+  </head>
+  <body class="login-page">
+    <div
+      class="container-fluid d-flex align-items-center justify-content-center min-vh-100"
+    >
+      <div class="login-container w-100">
+        <!-- Header -->
+        <div class="text-center">
+          <div class="d-flex flex-column align-items-center">
+            <img
+              src="/img/fabrica.png"
+              alt="UsinaSoft"
+              class="login-logo mb-3"
+            />
+          </div>
         </div>
+
+        <!-- Login Card -->
+        <div class="card shadow-lg border-0">
+          <div class="card-header bg-white border-0 text-center py-4">
+            <h2 class="card-title h4 mb-0">Acesso ao Sistema</h2>
+          </div>
+
+          <div class="card-body p-4">
+            <!-- Alerts -->
+            <% if (error && error !== 'null' && error !== 'undefined') { %>
+            <div
+              class="alert alert-danger alert-dismissible fade show"
+              role="alert"
+            >
+              <%= error %>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+              ></button>
+            </div>
+            <% } %> <% if (success && success !== 'null' && success !==
+            'undefined') { %>
+            <div
+              class="alert alert-success alert-dismissible fade show"
+              role="alert"
+            >
+              <%= success %>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+              ></button>
+            </div>
+            <% } %>
+
+            <!-- Login Form -->
+            <form method="POST" action="/login" class="mb-4">
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  class="form-control form-control-lg"
+                  placeholder="Digite seu email"
+                  required
+                />
+              </div>
+
+              <div class="mb-4">
+                <label for="password" class="form-label">Senha</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  class="form-control form-control-lg"
+                  placeholder="Digite sua senha"
+                  required
+                />
+              </div>
+
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">
+                  Entrar
+                </button>
+              </div>
+            </form>
+
+            <!-- Divider -->
+            <div class="position-relative text-center my-4">
+              <hr class="my-4" />
+              <span
+                class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small"
+                >ou</span
+              >
+            </div>
+
+            <!-- Register Link -->
+            <div class="text-center">
+              <p class="text-muted mb-3">Não tem uma conta?</p>
+              <a
+                href="/cadastro-usuario"
+                class="btn btn-outline-primary btn-lg"
+              >
+                Criar Conta
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  </body>
 </html>

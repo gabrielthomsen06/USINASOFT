@@ -144,17 +144,31 @@
                         >Número da Nota Fiscal (OP)
                         <span class="text-danger">*</span></label
                       >
+                      <select
+                        id="ordemProducaoSelect"
+                        name="ordemProducao"
+                        class="form-select"
+                        onchange="toggleOrdemProducaoInput()"
+                      >
+                        <option value="">Selecione uma OP existente</option>
+                        <% if (ops && ops.length > 0) { %> <% ops.forEach(op =>
+                        { %>
+                        <option value="<%= op.codigo %>">
+                          <%= op.codigo %> - <%= op.cliente_nome %> (<%=
+                          op.total_pecas %> peças)
+                        </option>
+                        <% }); %> <% } %>
+                        <option value="__nova__">➕ Criar nova OP</option>
+                      </select>
                       <input
                         type="text"
-                        id="ordemProducao"
-                        name="ordemProducao"
-                        class="form-control"
+                        id="ordemProducaoInput"
+                        name="ordemProducaoNova"
+                        class="form-control mt-2 d-none"
                         placeholder="Ex: NF-12345"
-                        required
                       />
                       <small class="form-text text-muted">
-                        Número da Nota Fiscal que criará ou vinculará à Ordem de
-                        Produção
+                        Selecione uma OP existente ou crie uma nova
                       </small>
                     </div>
 
@@ -445,6 +459,53 @@
             formNovoCliente.reset();
           });
       });
+
+      // Função para alternar entre select e input de OP
+      function toggleOrdemProducaoInput() {
+        const select = document.getElementById("ordemProducaoSelect");
+        const input = document.getElementById("ordemProducaoInput");
+
+        if (select.value === "__nova__") {
+          // Mostrar input para nova OP
+          input.classList.remove("d-none");
+          input.required = true;
+          input.focus();
+          select.required = false;
+        } else {
+          // Esconder input
+          input.classList.add("d-none");
+          input.required = false;
+          input.value = "";
+          select.required = true;
+        }
+      }
+
+      // Validar formulário antes de enviar
+      document
+        .querySelector('form[action="/cadastro"]')
+        .addEventListener("submit", function (e) {
+          const select = document.getElementById("ordemProducaoSelect");
+          const input = document.getElementById("ordemProducaoInput");
+
+          if (select.value === "__nova__") {
+            if (!input.value.trim()) {
+              e.preventDefault();
+              alert("Por favor, digite o número da nova Ordem de Produção");
+              input.focus();
+              return false;
+            }
+            // Copiar valor do input para o select para enviar no formulário
+            select.name = "";
+            input.name = "ordemProducao";
+          } else {
+            if (!select.value) {
+              e.preventDefault();
+              alert("Por favor, selecione uma Ordem de Produção");
+              select.focus();
+              return false;
+            }
+          }
+        });
     </script>
   </body>
 </html>

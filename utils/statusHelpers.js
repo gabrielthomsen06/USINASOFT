@@ -42,9 +42,9 @@ const getStatusLabel = (status) => {
 const getPrioridadeLabel = (numericPriority) => {
   if (numericPriority === null || numericPriority === undefined)
     return "Normal";
-  if (numericPriority >= 4) return "alta";
-  if (numericPriority >= 2) return "media";
-  if (numericPriority >= 1) return "baixa";
+  if (numericPriority >= 4) return "Alta";
+  if (numericPriority >= 2) return "Media";
+  if (numericPriority >= 1) return "Baixa";
   return "Normal";
 };
 

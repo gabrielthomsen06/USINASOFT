@@ -184,7 +184,7 @@
                     </thead>
                     <tbody>
                       <% clientes.forEach(cliente => { %>
-                      <tr>
+                      <tr data-cliente-id="<%= cliente.id %>">
                         <td><strong><%= cliente.nome %></strong></td>
                         <td><%= cliente.cnpj || '-' %></td>
                         <td><%= cliente.email || '-' %></td>
@@ -193,12 +193,14 @@
                           <button
                             class="btn btn-sm btn-outline-primary"
                             title="Editar"
+                            onclick="editarCliente('<%= cliente.id %>', '<%= cliente.nome %>', '<%= cliente.cnpj || '' %>', '<%= cliente.email || '' %>', '<%= cliente.telefone || '' %>', '<%= cliente.endereco || '' %>')"
                           >
                             <i class="fas fa-edit"></i>
                           </button>
                           <button
                             class="btn btn-sm btn-outline-danger"
                             title="Excluir"
+                            onclick="excluirCliente('<%= cliente.id %>', '<%= cliente.nome %>')"
                           >
                             <i class="fas fa-trash"></i>
                           </button>
@@ -223,8 +225,152 @@
 
     <%- include('partials/footer') %>
 
+    <!-- Modal de Edição de Cliente -->
+    <div class="modal fade" id="editarClienteModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-edit me-2"></i>Editar Cliente
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="formEditarCliente">
+              <input type="hidden" id="editClienteId" />
+              <div class="mb-3">
+                <label for="editNome" class="form-label">Nome *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editNome"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editCnpj" class="form-label">CNPJ/CPF</label>
+                <input type="text" class="form-control" id="editCnpj" />
+              </div>
+              <div class="mb-3">
+                <label for="editEmail" class="form-label">E-mail</label>
+                <input type="email" class="form-control" id="editEmail" />
+              </div>
+              <div class="mb-3">
+                <label for="editTelefone" class="form-label">Telefone</label>
+                <input type="tel" class="form-control" id="editTelefone" />
+              </div>
+              <div class="mb-3">
+                <label for="editEndereco" class="form-label">Endereço</label>
+                <textarea
+                  class="form-control"
+                  id="editEndereco"
+                  rows="2"
+                ></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="salvarEdicaoCliente()"
+            >
+              <i class="fas fa-save me-2"></i>Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/main.js"></script>
+
+    <script>
+      function editarCliente(id, nome, cnpj, email, telefone, endereco) {
+        document.getElementById("editClienteId").value = id;
+        document.getElementById("editNome").value = nome;
+        document.getElementById("editCnpj").value = cnpj;
+        document.getElementById("editEmail").value = email;
+        document.getElementById("editTelefone").value = telefone;
+        document.getElementById("editEndereco").value = endereco;
+
+        const modal = new bootstrap.Modal(
+          document.getElementById("editarClienteModal")
+        );
+        modal.show();
+      }
+
+      async function salvarEdicaoCliente() {
+        const id = document.getElementById("editClienteId").value;
+        const nome = document.getElementById("editNome").value;
+        const cnpj = document.getElementById("editCnpj").value;
+        const email = document.getElementById("editEmail").value;
+        const telefone = document.getElementById("editTelefone").value;
+        const endereco = document.getElementById("editEndereco").value;
+
+        if (!nome) {
+          alert("Nome é obrigatório");
+          return;
+        }
+
+        try {
+          const response = await fetch(`/clientes/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ nome, cnpj, email, telefone, endereco }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Cliente atualizado com sucesso!");
+            location.reload();
+          } else {
+            alert("Erro: " + result.error);
+          }
+        } catch (error) {
+          console.error("Erro:", error);
+          alert("Erro ao atualizar cliente");
+        }
+      }
+
+      async function excluirCliente(id, nome) {
+        if (!confirm(`Tem certeza que deseja excluir o cliente "${nome}"?`)) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/clientes/${id}`, {
+            method: "DELETE",
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Cliente excluído com sucesso!");
+            location.reload();
+          } else {
+            alert("Erro: " + result.error);
+          }
+        } catch (error) {
+          console.error("Erro:", error);
+          alert("Erro ao excluir cliente");
+        }
+      }
+    </script>
   </body>
 </html>

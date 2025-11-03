@@ -127,17 +127,34 @@ const UsinaSoft = {
       try {
         const response = await fetch(url, config);
 
+        // Se receber 401 (não autorizado), redirecionar para login
+        if (response.status === 401) {
+          UsinaSoft.utils.showNotification(
+            "Sessão expirada. Redirecionando para login...",
+            "warning"
+          );
+          setTimeout(() => {
+            window.location.href =
+              "/login?error=" +
+              encodeURIComponent("Sessão expirada. Faça login novamente.");
+          }, 2000);
+          throw new Error("Unauthorized");
+        }
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         return await response.json();
       } catch (error) {
-        console.error("API request failed:", error);
-        UsinaSoft.utils.showNotification(
-          "Erro na comunicação com o servidor",
-          "error"
-        );
+        // Não mostrar notificação para erro 401 já que já mostramos acima
+        if (error.message !== "Unauthorized") {
+          console.error("API request failed:", error);
+          UsinaSoft.utils.showNotification(
+            "Erro na comunicação com o servidor",
+            "error"
+          );
+        }
         throw error;
       }
     },

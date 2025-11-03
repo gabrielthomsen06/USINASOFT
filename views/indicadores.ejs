@@ -76,20 +76,20 @@
                   <label for="date_field">Campo de Data</label>
                   <select id="date_field" name="date_field">
                     <option
-                      value="data_fim_prevista"
-                      <%= (query && query.date_field) === 'data_fim_prevista'
-                      ? 'selected'
-                      : '' %>
-                    >
-                      Data fim prevista
-                    </option>
-                    <option
                       value="created_at"
-                      <%= (query && query.date_field) === 'created_at'
+                      <%= (query && query.date_field) === 'created_at' || !query?.date_field
                       ? 'selected'
                       : '' %>
                     >
                       Data de criação
+                    </option>
+                    <option
+                      value="updated_at"
+                      <%= (query && query.date_field) === 'updated_at'
+                      ? 'selected'
+                      : '' %>
+                    >
+                      Data de atualização
                     </option>
                   </select>
                 </div>
@@ -114,42 +114,95 @@
             Nenhum indicador disponível para o período selecionado.
           </div>
           <% } else { %>
-          <div class="stats-grid">
-            <% const agrupado = indicadores.agrupado || {}; %>
-            <div class="stat-card">
-              <div class="stat-icon total-icon">
-                <i class="fas fa-layer-group"></i>
+          <!-- Stats OPs -->
+          <div class="stats-section">
+            <h3 class="section-title">
+              <i class="fas fa-file-alt"></i>
+              Ordens de Produção
+            </h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon total-icon">
+                  <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="stat-info">
+                  <h4>Total de OPs</h4>
+                  <p><%= indicadores.total || 0 %></p>
+                </div>
               </div>
-              <div class="stat-info">
-                <h4>Total de OPs</h4>
-                <p><%= indicadores.total || 0 %></p>
+              <div class="stat-card">
+                <div class="stat-icon fila-icon">
+                  <i class="fas fa-folder-open"></i>
+                </div>
+                <div class="stat-info">
+                  <h4>Abertas</h4>
+                  <p><%= indicadores.por_status?.aberta || 0 %></p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon andamento-icon">
+                  <i class="fas fa-cogs"></i>
+                </div>
+                <div class="stat-info">
+                  <h4>Em Andamento</h4>
+                  <p><%= indicadores.por_status?.em_andamento || 0 %></p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon concluida-icon">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                  <h4>Concluídas</h4>
+                  <p><%= indicadores.por_status?.concluida || 0 %></p>
+                </div>
               </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon fila-icon">
-                <i class="fas fa-hourglass-start"></i>
+          </div>
+
+          <!-- Stats Peças -->
+          <div class="stats-section mt-4">
+            <h3 class="section-title">
+              <i class="fas fa-wrench"></i>
+              Peças
+            </h3>
+            <div class="stats-grid">
+              <% const agrupado = indicadores.agrupado || {}; %>
+              <div class="stat-card">
+                <div class="stat-icon total-icon">
+                  <i class="fas fa-cubes"></i>
+                </div>
+                <div class="stat-info">
+                  <h4>Total de Peças</h4>
+                  <p><%= indicadores.pecas?.total || 0 %></p>
+                </div>
               </div>
-              <div class="stat-info">
-                <h4>Em Fila</h4>
-                <p><%= agrupado.emFila || 0 %></p>
+              <div class="stat-card">
+                <div class="stat-icon fila-icon">
+                  <i class="fas fa-hourglass-start"></i>
+                </div>
+                <div class="stat-info">
+                  <h4>Em Fila</h4>
+                  <p><%= agrupado.emFila || 0 %></p>
+                </div>
               </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon andamento-icon">
-                <i class="fas fa-cogs"></i>
+              <div class="stat-card">
+                <div class="stat-icon andamento-icon">
+                  <i class="fas fa-spinner"></i>
+                </div>
+                <div class="stat-info">
+                  <h4>Em Andamento</h4>
+                  <p><%= agrupado.emAndamento || 0 %></p>
+                </div>
               </div>
-              <div class="stat-info">
-                <h4>Em Andamento</h4>
-                <p><%= agrupado.emAndamento || 0 %></p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon concluida-icon">
-                <i class="fas fa-check-circle"></i>
-              </div>
-              <div class="stat-info">
-                <h4>Concluídas</h4>
-                <p><%= agrupado.concluidas || 0 %></p>
+              <div class="stat-card">
+                <div class="stat-icon concluida-icon">
+                  <i class="fas fa-check-double"></i>
+                </div>
+                <div class="stat-info">
+                  <h4>Concluídas</h4>
+                  <p><%= agrupado.concluidas || 0 %></p>
+                </div>
               </div>
             </div>
           </div>

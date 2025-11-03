@@ -87,6 +87,9 @@ const addAuthToken = (req, res, next) => {
     api.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${req.session.token}`;
+
+    // Passar a sessão para o interceptor da API
+    api.setSession(req.session);
   }
   next();
 };
@@ -95,8 +98,8 @@ const addAuthToken = (req, res, next) => {
 app.get("/login", (req, res) => {
   res.render("login", {
     title: "Login - UsinaSoft",
-    error: req.query.error,
-    success: req.query.success,
+    error: req.query.error || null,
+    success: req.query.success || null,
   });
 });
 
@@ -104,27 +107,66 @@ app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    console.log("Tentando login com:", email);
+    console.log("URL da API:", `${apiBaseUrl}auth/token/`);
+
     const response = await axios.post(`${apiBaseUrl}auth/token/`, {
       email,
       password,
     });
 
-    const { access, refresh } = response.data;
+    console.log("Login bem-sucedido!");
+    const { access, refresh, user } = response.data;
 
     // Armazenar tokens e informações do usuário na sessão
     req.session.token = access;
     req.session.refreshToken = refresh;
-    req.session.user = { email }; // Você pode decodificar o token para obter mais dados
+
+    // Armazenar dados completos do usuário (se retornados pela API)
+    // Caso contrário, buscar os dados do usuário
+    if (user) {
+      req.session.user = user;
+    } else {
+      // Buscar dados do usuário logado
+      try {
+        api.defaults.headers.common["Authorization"] = `Bearer ${access}`;
+        const userResponse = await api.get("/auth/me/");
+        req.session.user = {
+          id: userResponse.data.id,
+          email: userResponse.data.email,
+          first_name: userResponse.data.first_name,
+          last_name: userResponse.data.last_name,
+        };
+      } catch (userError) {
+        console.warn(
+          "Não foi possível buscar dados do usuário:",
+          userError.message
+        );
+        req.session.user = { email };
+      }
+    }
 
     // Configurar o token para chamadas futuras da API nesta sessão
     api.defaults.headers.common["Authorization"] = `Bearer ${access}`;
 
     res.redirect("/menu");
   } catch (error) {
+    console.error("Erro no login:", error.message);
+    if (error.response) {
+      console.error("Status:", error.response.status);
+      console.error("Dados:", error.response.data);
+    }
+
     let errorMessage = "Erro ao fazer login. Verifique suas credenciais.";
     if (error.response && error.response.status === 401) {
       errorMessage = "Credenciais inválidas. Tente novamente.";
+    } else if (error.code === "ECONNREFUSED") {
+      errorMessage =
+        "Não foi possível conectar ao servidor de autenticação. Verifique se a API está rodando.";
+    } else if (error.message) {
+      errorMessage = `Erro ao fazer login: ${error.message}`;
     }
+
     res.render("login", {
       title: "Login - UsinaSoft",
       error: errorMessage,
@@ -202,6 +244,29 @@ app.post("/cadastro-usuario", async (req, res) => {
 app.use(requireAuth);
 app.use(addAuthToken);
 
+// Função auxiliar para verificar se o erro é de autenticação
+const isAuthError = (error) => {
+  return error.response && error.response.status === 401;
+};
+
+// Função auxiliar para lidar com erros de autenticação
+const handleAuthError = (
+  req,
+  res,
+  errorMessage = "Sessão expirada. Faça login novamente."
+) => {
+  // Limpar a sessão
+  req.session.token = null;
+  req.session.refreshToken = null;
+  req.session.user = null;
+
+  // Limpar o header da API
+  delete api.defaults.headers.common["Authorization"];
+
+  // Redirecionar para login
+  return res.redirect("/login?error=" + encodeURIComponent(errorMessage));
+};
+
 // ===== ROTAS PRINCIPAIS =====
 app.get("/menu", (req, res) => {
   res.render("menu", {
@@ -235,6 +300,12 @@ app.get("/clientes", async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao buscar clientes:", error.message);
+
+    // Se for erro de autenticação, redirecionar para login
+    if (isAuthError(error)) {
+      return handleAuthError(req, res);
+    }
+
     res.render("clientes", {
       title: "Cadastro de Clientes - UsinaSoft",
       user: req.session.user,
@@ -345,6 +416,62 @@ app.post("/clientes", async (req, res) => {
   }
 });
 
+// Rota para editar cliente (PUT/PATCH)
+app.put("/clientes/:id", async (req, res) => {
+  const { id } = req.params;
+  const { nome, cnpj, email, telefone, endereco } = req.body;
+
+  try {
+    const clienteResponse = await api.put(`/clientes/${id}/`, {
+      nome,
+      cnpj: cnpj || "",
+      email: email || "",
+      telefone: telefone || "",
+      endereco: endereco || "",
+    });
+
+    return res.json({
+      success: true,
+      cliente: clienteResponse.data,
+      message: "Cliente atualizado com sucesso!",
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar cliente:", error);
+    let errorMessage = "Erro ao atualizar o cliente.";
+
+    if (error.response?.data) {
+      const apiErrors = error.response.data;
+      errorMessage = Object.entries(apiErrors)
+        .map(([field, messages]) => {
+          const msgs = Array.isArray(messages) ? messages : [messages];
+          return `${field}: ${msgs.join(", ")}`;
+        })
+        .join("; ");
+    }
+
+    return res.status(400).json({ success: false, error: errorMessage });
+  }
+});
+
+// Rota para excluir cliente (DELETE)
+app.delete("/clientes/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await api.delete(`/clientes/${id}/`);
+    return res.json({
+      success: true,
+      message: "Cliente excluído com sucesso!",
+    });
+  } catch (error) {
+    console.error("Erro ao excluir cliente:", error);
+    return res.status(400).json({
+      success: false,
+      error: "Erro ao excluir o cliente.",
+    });
+  }
+});
+
 app.get("/cadastro", async (req, res) => {
   const success = req.query.success === "true";
 
@@ -355,6 +482,12 @@ app.get("/cadastro", async (req, res) => {
       ? clientesResponse.data
       : clientesResponse.data.results || [];
 
+    // Buscar lista de OPs existentes
+    const opsResponse = await api.get("/ops/");
+    const ops = Array.isArray(opsResponse.data)
+      ? opsResponse.data
+      : opsResponse.data.results || [];
+
     res.render("cadastro", {
       title: "Cadastro de Peças - UsinaSoft",
       user: req.session.user,
@@ -364,10 +497,17 @@ app.get("/cadastro", async (req, res) => {
       currentPage: "cadastro",
       success,
       clientes,
+      ops,
       error: null,
     });
   } catch (error) {
-    console.error("Erro ao buscar clientes:", error.message);
+    console.error("Erro ao buscar dados:", error.message);
+
+    // Se for erro de autenticação, redirecionar para login
+    if (isAuthError(error)) {
+      return handleAuthError(req, res);
+    }
+
     res.render("cadastro", {
       title: "Cadastro de Peças - UsinaSoft",
       user: req.session.user,
@@ -377,6 +517,7 @@ app.get("/cadastro", async (req, res) => {
       currentPage: "cadastro",
       success: false,
       clientes: [],
+      ops: [],
       error: "Erro ao carregar dados. Tente novamente.",
     });
   }
@@ -411,9 +552,8 @@ app.post("/cadastro", async (req, res) => {
     if (prioridade === "media") prioridadeNum = 3;
     if (prioridade === "alta") prioridadeNum = 5;
 
-    // Criar a peça na API Django
-    // A API espera: ordem_producao_codigo, cliente (UUID), codigo, nome, descricao, quantidade, prioridade
-    const pecaResponse = await api.post("/pecas/", {
+    // Preparar dados da peça
+    const pecaData = {
       ordem_producao_codigo: ordemProducao, // Número da NF - cria/associa OP automaticamente
       cliente: cliente, // UUID do cliente (não converter para int)
       codigo: codigoPeca,
@@ -423,7 +563,20 @@ app.post("/cadastro", async (req, res) => {
       prioridade: prioridadeNum,
       data_entrega: dataEntrega || null,
       status: "em_fila", // Status inicial
-    });
+    };
+
+    // Adicionar dados do usuário criador se disponível
+    if (req.session.user) {
+      if (req.session.user.id) {
+        pecaData.criado_por = req.session.user.id;
+      }
+      if (req.session.user.email) {
+        pecaData.criado_por_email = req.session.user.email;
+      }
+    }
+
+    // Criar a peça na API Django
+    const pecaResponse = await api.post("/pecas/", pecaData);
 
     console.log("Peça cadastrada com sucesso:", pecaResponse.data);
 
@@ -462,6 +615,17 @@ app.post("/cadastro", async (req, res) => {
         ? clientesResponse.data
         : clientesResponse.data.results || [];
 
+      // Tentar buscar OPs também
+      let ops = [];
+      try {
+        const opsResponse = await api.get("/ops/");
+        ops = Array.isArray(opsResponse.data)
+          ? opsResponse.data
+          : opsResponse.data.results || [];
+      } catch (opsError) {
+        console.warn("Aviso: Não foi possível buscar OPs:", opsError.message);
+      }
+
       res.render("cadastro", {
         title: "Cadastro de Peças - UsinaSoft",
         user: req.session.user,
@@ -471,6 +635,7 @@ app.post("/cadastro", async (req, res) => {
         currentPage: "cadastro",
         success: false,
         clientes,
+        ops,
         error: errorMessage,
       });
     } catch (clientError) {
@@ -483,6 +648,7 @@ app.post("/cadastro", async (req, res) => {
         currentPage: "cadastro",
         success: false,
         clientes: [],
+        ops: [],
         error: errorMessage,
       });
     }
@@ -502,26 +668,33 @@ app.get("/indicadores", async (req, res) => {
     const indicadoresResponse = await api.get(`/indicadores/summary/`, {
       params,
     });
-    const indicadores = indicadoresResponse.data;
+    const data = indicadoresResponse.data;
+
+    // Transformar os dados do backend para o formato esperado pelo frontend
+    const indicadores = {
+      periodo: data.periodo || {},
+      total: data.ordens_producao?.total || 0,
+      por_status: data.ordens_producao?.por_status || {},
+      detalhes_por_status: data.ordens_producao?.detalhes_por_status || [],
+      tempo_medio_producao_dias:
+        data.ordens_producao?.tempo_medio_producao_dias || 0,
+      agrupado: {
+        emFila: data.pecas?.por_status?.em_fila || 0,
+        emAndamento: data.pecas?.por_status?.em_andamento || 0,
+        concluidas: data.pecas?.por_status?.concluida || 0,
+      },
+      pecas: data.pecas || {},
+    };
 
     // Normalizar os dados para garantir que todas as chaves existam
-    if (indicadores) {
-      const defaultStatus = {
-        aberta: 0,
-        em_andamento: 0,
-        pausada: 0,
-        concluida: 0,
-        cancelada: 0,
-      };
-      indicadores.por_status = { ...defaultStatus, ...indicadores.por_status };
-
-      const defaultAgrupado = {
-        emFila: 0,
-        emAndamento: 0,
-        concluidas: 0,
-      };
-      indicadores.agrupado = { ...defaultAgrupado, ...indicadores.agrupado };
-    }
+    const defaultStatus = {
+      aberta: 0,
+      em_andamento: 0,
+      pausada: 0,
+      concluida: 0,
+      cancelada: 0,
+    };
+    indicadores.por_status = { ...defaultStatus, ...indicadores.por_status };
 
     res.render("indicadores", {
       title: "Indicadores de Produção - UsinaSoft",
@@ -536,6 +709,12 @@ app.get("/indicadores", async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao buscar indicadores:", error.message);
+
+    // Se for erro de autenticação, redirecionar para login
+    if (isAuthError(error)) {
+      return handleAuthError(req, res);
+    }
+
     res.render("indicadores", {
       title: "Indicadores de Produção - UsinaSoft",
       user: req.session.user,
@@ -609,6 +788,12 @@ app.get("/producao", async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao buscar dados de produção:", error.message);
+
+    // Se for erro de autenticação, redirecionar para login
+    if (isAuthError(error)) {
+      return handleAuthError(req, res);
+    }
+
     res.render("producao", {
       title: "Controle de Produção - UsinaSoft",
       user: req.session.user,
@@ -623,6 +808,243 @@ app.get("/producao", async (req, res) => {
       getStatusIcon,
       getStatusLabel,
       formatDate,
+    });
+  }
+});
+
+// Rota para visualizar detalhes de uma OP (página HTML)
+app.get("/ops/:id/detalhes", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Buscar dados da OP
+    const opResponse = await api.get(`/ops/${id}/`);
+    const op = opResponse.data;
+
+    console.log("OP encontrada:", op.id, op.codigo);
+
+    // Buscar peças da OP - usar o ID da OP
+    const pecasResponse = await api.get(`/pecas/?ordem_producao=${op.id}`);
+    console.log("URL de busca de peças:", `/pecas/?ordem_producao=${op.id}`);
+    console.log("Resposta de peças:", pecasResponse.data);
+
+    const pecas = Array.isArray(pecasResponse.data)
+      ? pecasResponse.data
+      : pecasResponse.data.results || [];
+
+    res.render("op-detalhes", {
+      title: `OP ${op.codigo} - Detalhes - UsinaSoft`,
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: "producao",
+      op,
+      pecas,
+      getStatusClass,
+      getStatusIcon,
+      getStatusLabel,
+      getPrioridadeLabel,
+      formatDate,
+      error: null,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar detalhes da OP:", error.message);
+
+    // Se for erro de autenticação, redirecionar para login
+    if (isAuthError(error)) {
+      return handleAuthError(req, res);
+    }
+
+    res.render("op-detalhes", {
+      title: "Detalhes da OP - UsinaSoft",
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: "producao",
+      op: null,
+      pecas: [],
+      getStatusClass,
+      getStatusIcon,
+      getStatusLabel,
+      getPrioridadeLabel,
+      formatDate,
+      error: "Erro ao carregar detalhes da ordem de produção.",
+    });
+  }
+});
+
+// Rota para buscar uma OP específica (GET - API JSON)
+app.get("/api/ops/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const opResponse = await api.get(`/ops/${id}/`);
+    return res.json(opResponse.data);
+  } catch (error) {
+    console.error("Erro ao buscar OP:", error);
+    return res.status(400).json({
+      success: false,
+      error: "Erro ao buscar a ordem de produção.",
+    });
+  }
+});
+
+// Rota para buscar usuários (GET)
+app.get("/api/usuarios", async (req, res) => {
+  try {
+    const usuariosResponse = await api.get("/usuarios/");
+    return res.json(usuariosResponse.data);
+  } catch (error) {
+    console.error("Erro ao buscar usuários:", error);
+    return res.status(400).json({
+      success: false,
+      error: "Erro ao buscar usuários.",
+    });
+  }
+});
+
+// Rota para editar OP (PUT/PATCH)
+app.put("/ops/:id", async (req, res) => {
+  const { id } = req.params;
+  const { codigo, cliente, data_entrega, observacoes, status, responsavel } =
+    req.body;
+
+  try {
+    const opData = {
+      codigo,
+      cliente,
+      data_entrega: data_entrega || null,
+      observacoes: observacoes || "",
+      status: status || "aberta",
+    };
+
+    // Adicionar responsável se foi fornecido
+    if (responsavel) {
+      opData.responsavel = responsavel;
+    }
+
+    const opResponse = await api.put(`/ops/${id}/`, opData);
+
+    return res.json({
+      success: true,
+      op: opResponse.data,
+      message: "Ordem de produção atualizada com sucesso!",
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar OP:", error);
+    let errorMessage = "Erro ao atualizar a ordem de produção.";
+
+    if (error.response?.data) {
+      const apiErrors = error.response.data;
+      errorMessage = Object.entries(apiErrors)
+        .map(([field, messages]) => {
+          const msgs = Array.isArray(messages) ? messages : [messages];
+          return `${field}: ${msgs.join(", ")}`;
+        })
+        .join("; ");
+    }
+
+    return res.status(400).json({ success: false, error: errorMessage });
+  }
+});
+
+// Rota para excluir OP (DELETE)
+app.delete("/ops/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await api.delete(`/ops/${id}/`);
+    return res.json({
+      success: true,
+      message: "Ordem de produção excluída com sucesso!",
+    });
+  } catch (error) {
+    console.error("Erro ao excluir OP:", error);
+    return res.status(400).json({
+      success: false,
+      error: "Erro ao excluir a ordem de produção.",
+    });
+  }
+});
+
+// Rota para editar peça (PUT/PATCH)
+app.put("/pecas/:id", async (req, res) => {
+  const { id } = req.params;
+  const {
+    codigo,
+    nome,
+    descricao,
+    quantidade,
+    prioridade,
+    status,
+    data_entrega,
+  } = req.body;
+
+  try {
+    // Se apenas o status foi enviado, fazer um PATCH
+    if (status && Object.keys(req.body).length === 1) {
+      const pecaResponse = await api.patch(`/pecas/${id}/`, {
+        status: status,
+      });
+
+      return res.json({
+        success: true,
+        peca: pecaResponse.data,
+        message: "Status da peça atualizado com sucesso!",
+      });
+    }
+
+    // Caso contrário, atualizar todos os campos
+    const pecaResponse = await api.put(`/pecas/${id}/`, {
+      codigo,
+      nome,
+      descricao: descricao || "",
+      quantidade: parseInt(quantidade) || 1,
+      prioridade: parseInt(prioridade) || 1,
+      status: status || "em_fila",
+      data_entrega: data_entrega || null,
+    });
+
+    return res.json({
+      success: true,
+      peca: pecaResponse.data,
+      message: "Peça atualizada com sucesso!",
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar peça:", error);
+    let errorMessage = "Erro ao atualizar a peça.";
+
+    if (error.response?.data) {
+      const apiErrors = error.response.data;
+      errorMessage = Object.entries(apiErrors)
+        .map(([field, messages]) => {
+          const msgs = Array.isArray(messages) ? messages : [messages];
+          return `${field}: ${msgs.join(", ")}`;
+        })
+        .join("; ");
+    }
+
+    return res.status(400).json({ success: false, error: errorMessage });
+  }
+});
+
+// Rota para excluir peça (DELETE)
+app.delete("/pecas/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await api.delete(`/pecas/${id}/`);
+    return res.json({
+      success: true,
+      message: "Peça excluída com sucesso!",
+    });
+  } catch (error) {
+    console.error("Erro ao excluir peça:", error);
+    return res.status(400).json({
+      success: false,
+      error: "Erro ao excluir a peça.",
     });
   }
 });

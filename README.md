@@ -1,21 +1,22 @@
 # UsinaSoft - Sistema de Gestão de Usinagem
 
-Sistema ERP desenvolvido para gestão de produção em usinagem, com controle de atividades, cadastro de peças, indicadores de produção e kanban de atividades.
+Sistema ERP desenvolvido para gestão de produção em usinagem, com cadastro de peças, controle de produção e indicadores.
 
 ## 🚀 Características
 
-- **Sistema de Login** com autenticação de sessão
+- **Sistema de Login** com autenticação JWT
 - **Menu Principal** com navegação intuitiva
+- **Cadastro de Clientes** com modal de cadastro rápido
 - **Cadastro de Peças** com validação de formulários
-- **Controle de Atividades** com kanban interativo
-- **Controle de Produção** com filtros avançados
-- **Indicadores** com gráficos visuais
+- **Controle de Produção** com filtros avançados e gestão de OPs
+- **Indicadores** com gráficos visuais e métricas em tempo real
 - **Design Responsivo** para desktop e mobile
 - **Componentes Reutilizáveis** para escalabilidade
 
 ## 🎨 Design System
 
 O sistema utiliza um design system consistente com as cores principais:
+
 - **Laranja Principal**: `#f15a29`
 - **Cinza Secundário**: `#ccc`
 - **Tipografia**: Segoe UI
@@ -37,8 +38,8 @@ UsinaSoft/
 │   ├── layout.ejs           # Layout principal
 │   ├── login.ejs            # Página de login
 │   ├── menu.ejs             # Menu principal
+│   ├── clientes.ejs         # Cadastro de clientes
 │   ├── cadastro.ejs         # Cadastro de peças
-│   ├── atividades.ejs       # Controle de atividades
 │   ├── producao.ejs         # Controle de produção
 │   ├── indicadores.ejs      # Indicadores
 │   └── partials/            # Componentes reutilizáveis
@@ -65,33 +66,39 @@ UsinaSoft/
 ## 🚀 Instalação e Execução
 
 ### Pré-requisitos
+
 - Node.js (versão 14 ou superior)
 - npm ou yarn
 
 ### Instalação
 
 1. Clone o repositório:
+
 ```bash
 git clone <url-do-repositorio>
 cd UsinaSoft
 ```
 
 2. Instale as dependências:
+
 ```bash
 npm install
 ```
 
 3. Execute o servidor:
+
 ```bash
 npm start
 ```
 
 Para desenvolvimento com auto-reload:
+
 ```bash
 npm run dev
 ```
 
 4. Acesse o sistema:
+
 ```
 http://localhost:3000
 ```
@@ -103,29 +110,27 @@ Para acessar o sistema, use qualquer email e senha (sistema de autenticação si
 ## 📱 Funcionalidades
 
 ### 1. Menu Principal
+
 - Dashboard com cards de navegação
 - Acesso rápido a todas as funcionalidades
 - Design responsivo
 
 ### 2. Cadastro de Peças
+
 - Formulário completo com validação
 - Campos: Cliente, Pedido, Código, Quantidade, Data de Entrega
 - Validação em tempo real
 - Feedback visual de sucesso/erro
 
-### 3. Controle de Atividades (Kanban)
-- Três colunas: Na Fila, Em Andamento, Concluído
-- Drag & Drop (preparado para implementação)
-- Contadores dinâmicos
-- Ações por item
+### 3. Controle de Produção
 
-### 4. Controle de Produção
 - Lista de itens em produção
 - Filtros por código, status e data
 - Estatísticas em tempo real
 - Ações de edição e remoção
 
-### 5. Indicadores
+### 4. Indicadores
+
 - Gráfico de barras interativo
 - Filtros por período
 - Cards de estatísticas
@@ -134,12 +139,14 @@ Para acessar o sistema, use qualquer email e senha (sistema de autenticação si
 ## 🎯 Melhorias Implementadas
 
 ### Estrutura e Organização
+
 - ✅ Separação clara entre views, partials e componentes
 - ✅ Estrutura de pastas organizada e escalável
 - ✅ Componentes reutilizáveis (botões, cards, formulários)
 - ✅ Sistema de layout consistente
 
 ### Design e UX
+
 - ✅ Design system com variáveis CSS
 - ✅ Cores padronizadas do projeto
 - ✅ Componentes responsivos
@@ -147,6 +154,7 @@ Para acessar o sistema, use qualquer email e senha (sistema de autenticação si
 - ✅ Feedback visual para ações
 
 ### Código e Boas Práticas
+
 - ✅ JavaScript modular e organizado
 - ✅ Validação de formulários
 - ✅ Sistema de notificações
@@ -154,6 +162,7 @@ Para acessar o sistema, use qualquer email e senha (sistema de autenticação si
 - ✅ Eventos customizados
 
 ### Escalabilidade
+
 - ✅ Estrutura preparada para banco de dados
 - ✅ API endpoints organizados
 - ✅ Componentes reutilizáveis
@@ -164,16 +173,19 @@ Para acessar o sistema, use qualquer email e senha (sistema de autenticação si
 Para expandir o sistema, considere implementar:
 
 1. **Banco de Dados**
+
    - Integração com PostgreSQL/MySQL
    - Modelos de dados estruturados
    - Migrations e seeds
 
 2. **Autenticação Real**
+
    - Hash de senhas com bcrypt
    - JWT tokens
    - Controle de permissões
 
 3. **Funcionalidades Avançadas**
+
    - Drag & Drop no kanban
    - Relatórios em PDF
    - Notificações em tempo real

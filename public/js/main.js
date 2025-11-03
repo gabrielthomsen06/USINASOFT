@@ -2,390 +2,400 @@
 
 // Configurações globais
 const UsinaSoft = {
-    config: {
-        apiUrl: '/api',
-        version: '1.0.0'
+  config: {
+    apiUrl: "/api",
+    version: "1.0.0",
+  },
+
+  // Utilitários
+  utils: {
+    // Formatar data
+    formatDate: (date) => {
+      return new Date(date).toLocaleDateString("pt-BR");
     },
-    
-    // Utilitários
-    utils: {
-        // Formatar data
-        formatDate: (date) => {
-            return new Date(date).toLocaleDateString('pt-BR');
-        },
-        
-        // Formatar moeda
-        formatCurrency: (value) => {
-            return new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            }).format(value);
-        },
-        
-        // Debounce para otimizar chamadas
-        debounce: (func, wait) => {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        },
-        
-        // Mostrar notificação
-        showNotification: (message, type = 'info') => {
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.innerHTML = `
+
+    // Formatar moeda
+    formatCurrency: (value) => {
+      return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(value);
+    },
+
+    // Debounce para otimizar chamadas
+    debounce: (func, wait) => {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    },
+
+    // Mostrar notificação
+    showNotification: (message, type = "info") => {
+      const notification = document.createElement("div");
+      notification.className = `notification notification-${type}`;
+      notification.innerHTML = `
                 <div class="notification-content">
                     <span class="notification-message">${message}</span>
                     <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
                 </div>
             `;
-            
-            document.body.appendChild(notification);
-            
-            // Auto remove após 5 segundos
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 5000);
-        },
-        
-        // Confirmar ação
-        confirm: (message, callback) => {
-            if (window.confirm(message)) {
-                callback();
-            }
+
+      document.body.appendChild(notification);
+
+      // Auto remove após 5 segundos
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
         }
+      }, 5000);
     },
-    
-    // Gerenciamento de estado
-    state: {
-        currentUser: null,
-        atividades: [],
-        producao: [],
-        
-        // Atualizar estado
-        update: (key, value) => {
-            UsinaSoft.state[key] = value;
-            UsinaSoft.events.emit('stateChange', { key, value });
-        },
-        
-        // Obter estado
-        get: (key) => {
-            return UsinaSoft.state[key];
-        }
+
+    // Confirmar ação
+    confirm: (message, callback) => {
+      if (window.confirm(message)) {
+        callback();
+      }
     },
-    
-    // Sistema de eventos
-    events: {
-        listeners: {},
-        
-        // Registrar listener
-        on: (event, callback) => {
-            if (!UsinaSoft.events.listeners[event]) {
-                UsinaSoft.events.listeners[event] = [];
-            }
-            UsinaSoft.events.listeners[event].push(callback);
-        },
-        
-        // Emitir evento
-        emit: (event, data) => {
-            if (UsinaSoft.events.listeners[event]) {
-                UsinaSoft.events.listeners[event].forEach(callback => {
-                    callback(data);
-                });
-            }
-        },
-        
-        // Remover listener
-        off: (event, callback) => {
-            if (UsinaSoft.events.listeners[event]) {
-                UsinaSoft.events.listeners[event] = UsinaSoft.events.listeners[event].filter(cb => cb !== callback);
-            }
-        }
+  },
+
+  // Gerenciamento de estado
+  state: {
+    currentUser: null,
+    producao: [],
+
+    // Atualizar estado
+    update: (key, value) => {
+      UsinaSoft.state[key] = value;
+      UsinaSoft.events.emit("stateChange", { key, value });
     },
-    
-    // API calls
-    api: {
-        // Requisição genérica
-        request: async (url, options = {}) => {
-            const defaultOptions = {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            };
-            
-            const config = { ...defaultOptions, ...options };
-            
-            try {
-                const response = await fetch(url, config);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('API request failed:', error);
-                UsinaSoft.utils.showNotification('Erro na comunicação com o servidor', 'error');
-                throw error;
-            }
+
+    // Obter estado
+    get: (key) => {
+      return UsinaSoft.state[key];
+    },
+  },
+
+  // Sistema de eventos
+  events: {
+    listeners: {},
+
+    // Registrar listener
+    on: (event, callback) => {
+      if (!UsinaSoft.events.listeners[event]) {
+        UsinaSoft.events.listeners[event] = [];
+      }
+      UsinaSoft.events.listeners[event].push(callback);
+    },
+
+    // Emitir evento
+    emit: (event, data) => {
+      if (UsinaSoft.events.listeners[event]) {
+        UsinaSoft.events.listeners[event].forEach((callback) => {
+          callback(data);
+        });
+      }
+    },
+
+    // Remover listener
+    off: (event, callback) => {
+      if (UsinaSoft.events.listeners[event]) {
+        UsinaSoft.events.listeners[event] = UsinaSoft.events.listeners[
+          event
+        ].filter((cb) => cb !== callback);
+      }
+    },
+  },
+
+  // API calls
+  api: {
+    // Requisição genérica
+    request: async (url, options = {}) => {
+      const defaultOptions = {
+        headers: {
+          "Content-Type": "application/json",
         },
-        
-        // GET request
-        get: (endpoint) => {
-            return UsinaSoft.api.request(`${UsinaSoft.config.apiUrl}${endpoint}`);
-        },
-        
-        // POST request
-        post: (endpoint, data) => {
-            return UsinaSoft.api.request(`${UsinaSoft.config.apiUrl}${endpoint}`, {
-                method: 'POST',
-                body: JSON.stringify(data)
-            });
-        },
-        
-        // PUT request
-        put: (endpoint, data) => {
-            return UsinaSoft.api.request(`${UsinaSoft.config.apiUrl}${endpoint}`, {
-                method: 'PUT',
-                body: JSON.stringify(data)
-            });
-        },
-        
-        // DELETE request
-        delete: (endpoint) => {
-            return UsinaSoft.api.request(`${UsinaSoft.config.apiUrl}${endpoint}`, {
-                method: 'DELETE'
-            });
+      };
+
+      const config = { ...defaultOptions, ...options };
+
+      try {
+        const response = await fetch(url, config);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }
+
+        return await response.json();
+      } catch (error) {
+        console.error("API request failed:", error);
+        UsinaSoft.utils.showNotification(
+          "Erro na comunicação com o servidor",
+          "error"
+        );
+        throw error;
+      }
+    },
+
+    // GET request
+    get: (endpoint) => {
+      return UsinaSoft.api.request(`${UsinaSoft.config.apiUrl}${endpoint}`);
+    },
+
+    // POST request
+    post: (endpoint, data) => {
+      return UsinaSoft.api.request(`${UsinaSoft.config.apiUrl}${endpoint}`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+
+    // PUT request
+    put: (endpoint, data) => {
+      return UsinaSoft.api.request(`${UsinaSoft.config.apiUrl}${endpoint}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+    },
+
+    // DELETE request
+    delete: (endpoint) => {
+      return UsinaSoft.api.request(`${UsinaSoft.config.apiUrl}${endpoint}`, {
+        method: "DELETE",
+      });
+    },
+  },
 };
 
 // ===== INICIALIZAÇÃO =====
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar componentes
-    initializeComponents();
-    
-    // Configurar eventos globais
-    setupGlobalEvents();
-    
-    // Carregar dados iniciais
-    loadInitialData();
+document.addEventListener("DOMContentLoaded", function () {
+  // Inicializar componentes
+  initializeComponents();
+
+  // Configurar eventos globais
+  setupGlobalEvents();
+
+  // Carregar dados iniciais
+  loadInitialData();
 });
 
 // ===== COMPONENTES =====
 function initializeComponents() {
-    // Inicializar tooltips
-    initializeTooltips();
-    
-    // Inicializar modais
-    initializeModals();
-    
-    // Inicializar formulários
-    initializeForms();
+  // Inicializar tooltips
+  initializeTooltips();
+
+  // Inicializar modais
+  initializeModals();
+
+  // Inicializar formulários
+  initializeForms();
 }
 
 function initializeTooltips() {
-    const tooltipElements = document.querySelectorAll('[data-tooltip]');
-    
-    tooltipElements.forEach(element => {
-        element.addEventListener('mouseenter', showTooltip);
-        element.addEventListener('mouseleave', hideTooltip);
-    });
+  const tooltipElements = document.querySelectorAll("[data-tooltip]");
+
+  tooltipElements.forEach((element) => {
+    element.addEventListener("mouseenter", showTooltip);
+    element.addEventListener("mouseleave", hideTooltip);
+  });
 }
 
 function showTooltip(event) {
-    const element = event.target;
-    const text = element.getAttribute('data-tooltip');
-    
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip';
-    tooltip.textContent = text;
-    tooltip.id = 'tooltip';
-    
-    document.body.appendChild(tooltip);
-    
-    const rect = element.getBoundingClientRect();
-    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-    tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
+  const element = event.target;
+  const text = element.getAttribute("data-tooltip");
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "tooltip";
+  tooltip.textContent = text;
+  tooltip.id = "tooltip";
+
+  document.body.appendChild(tooltip);
+
+  const rect = element.getBoundingClientRect();
+  tooltip.style.left =
+    rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + "px";
+  tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + "px";
 }
 
 function hideTooltip() {
-    const tooltip = document.getElementById('tooltip');
-    if (tooltip) {
-        tooltip.remove();
-    }
+  const tooltip = document.getElementById("tooltip");
+  if (tooltip) {
+    tooltip.remove();
+  }
 }
 
 function initializeModals() {
-    // Fechar modal ao clicar fora
-    document.addEventListener('click', function(event) {
-        if (event.target.classList.contains('modal')) {
-            closeModal(event.target);
-        }
-    });
-    
-    // Fechar modal com ESC
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            const openModal = document.querySelector('.modal.active');
-            if (openModal) {
-                closeModal(openModal);
-            }
-        }
-    });
+  // Fechar modal ao clicar fora
+  document.addEventListener("click", function (event) {
+    if (event.target.classList.contains("modal")) {
+      closeModal(event.target);
+    }
+  });
+
+  // Fechar modal com ESC
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      const openModal = document.querySelector(".modal.active");
+      if (openModal) {
+        closeModal(openModal);
+      }
+    }
+  });
 }
 
 function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+  }
 }
 
 function closeModal(modal) {
-    if (typeof modal === 'string') {
-        modal = document.getElementById(modal);
-    }
-    
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
+  if (typeof modal === "string") {
+    modal = document.getElementById(modal);
+  }
+
+  if (modal) {
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+  }
 }
 
 function initializeForms() {
-    // Validação em tempo real
-    const forms = document.querySelectorAll('form[data-validate]');
-    
-    forms.forEach(form => {
-        const inputs = form.querySelectorAll('input, select, textarea');
-        
-        inputs.forEach(input => {
-            input.addEventListener('blur', validateField);
-            input.addEventListener('input', clearFieldError);
-        });
-        
-        form.addEventListener('submit', validateForm);
+  // Validação em tempo real
+  const forms = document.querySelectorAll("form[data-validate]");
+
+  forms.forEach((form) => {
+    const inputs = form.querySelectorAll("input, select, textarea");
+
+    inputs.forEach((input) => {
+      input.addEventListener("blur", validateField);
+      input.addEventListener("input", clearFieldError);
     });
+
+    form.addEventListener("submit", validateForm);
+  });
 }
 
 function validateField(event) {
-    const field = event.target;
-    const value = field.value.trim();
-    
-    // Limpar erro anterior
-    clearFieldError(event);
-    
-    // Validações básicas
-    if (field.hasAttribute('required') && !value) {
-        showFieldError(field, 'Este campo é obrigatório');
-        return false;
-    }
-    
-    if (field.type === 'email' && value && !isValidEmail(value)) {
-        showFieldError(field, 'Email inválido');
-        return false;
-    }
-    
-    if (field.type === 'number' && value && isNaN(value)) {
-        showFieldError(field, 'Valor numérico inválido');
-        return false;
-    }
-    
-    return true;
+  const field = event.target;
+  const value = field.value.trim();
+
+  // Limpar erro anterior
+  clearFieldError(event);
+
+  // Validações básicas
+  if (field.hasAttribute("required") && !value) {
+    showFieldError(field, "Este campo é obrigatório");
+    return false;
+  }
+
+  if (field.type === "email" && value && !isValidEmail(value)) {
+    showFieldError(field, "Email inválido");
+    return false;
+  }
+
+  if (field.type === "number" && value && isNaN(value)) {
+    showFieldError(field, "Valor numérico inválido");
+    return false;
+  }
+
+  return true;
 }
 
 function validateForm(event) {
-    const form = event.target;
-    const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
-    let isValid = true;
-    
-    inputs.forEach(input => {
-        if (!validateField({ target: input })) {
-            isValid = false;
-        }
-    });
-    
-    if (!isValid) {
-        event.preventDefault();
-        UsinaSoft.utils.showNotification('Por favor, corrija os erros no formulário', 'error');
+  const form = event.target;
+  const inputs = form.querySelectorAll(
+    "input[required], select[required], textarea[required]"
+  );
+  let isValid = true;
+
+  inputs.forEach((input) => {
+    if (!validateField({ target: input })) {
+      isValid = false;
     }
-    
-    return isValid;
+  });
+
+  if (!isValid) {
+    event.preventDefault();
+    UsinaSoft.utils.showNotification(
+      "Por favor, corrija os erros no formulário",
+      "error"
+    );
+  }
+
+  return isValid;
 }
 
 function showFieldError(field, message) {
-    field.classList.add('error');
-    
-    let errorElement = field.parentElement.querySelector('.form-error');
-    if (!errorElement) {
-        errorElement = document.createElement('span');
-        errorElement.className = 'form-error';
-        field.parentElement.appendChild(errorElement);
-    }
-    
-    errorElement.textContent = message;
+  field.classList.add("error");
+
+  let errorElement = field.parentElement.querySelector(".form-error");
+  if (!errorElement) {
+    errorElement = document.createElement("span");
+    errorElement.className = "form-error";
+    field.parentElement.appendChild(errorElement);
+  }
+
+  errorElement.textContent = message;
 }
 
 function clearFieldError(event) {
-    const field = event.target;
-    field.classList.remove('error');
-    
-    const errorElement = field.parentElement.querySelector('.form-error');
-    if (errorElement) {
-        errorElement.remove();
-    }
+  const field = event.target;
+  field.classList.remove("error");
+
+  const errorElement = field.parentElement.querySelector(".form-error");
+  if (errorElement) {
+    errorElement.remove();
+  }
 }
 
 function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 // ===== EVENTOS GLOBAIS =====
 function setupGlobalEvents() {
-    // Logout
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('[data-logout]')) {
-            event.preventDefault();
-            UsinaSoft.utils.confirm('Tem certeza que deseja sair?', () => {
-                window.location.href = '/logout';
-            });
-        }
-    });
-    
-    // Navegação com confirmação
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('[data-confirm]')) {
-            const message = event.target.getAttribute('data-confirm');
-            if (!confirm(message)) {
-                event.preventDefault();
-            }
-        }
-    });
+  // Logout
+  document.addEventListener("click", function (event) {
+    if (event.target.matches("[data-logout]")) {
+      event.preventDefault();
+      UsinaSoft.utils.confirm("Tem certeza que deseja sair?", () => {
+        window.location.href = "/logout";
+      });
+    }
+  });
+
+  // Navegação com confirmação
+  document.addEventListener("click", function (event) {
+    if (event.target.matches("[data-confirm]")) {
+      const message = event.target.getAttribute("data-confirm");
+      if (!confirm(message)) {
+        event.preventDefault();
+      }
+    }
+  });
 }
 
 // ===== CARREGAMENTO DE DADOS =====
 function loadInitialData() {
-    // Carregar dados do usuário se disponível
-    const userElement = document.querySelector('[data-user]');
-    if (userElement) {
-        try {
-            const userData = JSON.parse(userElement.getAttribute('data-user'));
-            UsinaSoft.state.update('currentUser', userData);
-        } catch (error) {
-            console.error('Erro ao carregar dados do usuário:', error);
-        }
+  // Carregar dados do usuário se disponível
+  const userElement = document.querySelector("[data-user]");
+  if (userElement) {
+    try {
+      const userData = JSON.parse(userElement.getAttribute("data-user"));
+      UsinaSoft.state.update("currentUser", userData);
+    } catch (error) {
+      console.error("Erro ao carregar dados do usuário:", error);
     }
+  }
 }
 
 // ===== FUNÇÕES GLOBAIS =====
@@ -396,7 +406,7 @@ window.closeModal = closeModal;
 
 // ===== ESTILOS DINÂMICOS =====
 // Adicionar estilos para componentes dinâmicos
-const dynamicStyles = document.createElement('style');
+const dynamicStyles = document.createElement("style");
 dynamicStyles.textContent = `
     .notification {
         position: fixed;

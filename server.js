@@ -383,12 +383,27 @@ app.get("/cadastro", async (req, res) => {
 });
 
 app.post("/cadastro", async (req, res) => {
-  const { cliente, codigoPeca, nomePeca, descricao, prioridade } = req.body;
+  const {
+    cliente,
+    codigoPeca,
+    nomePeca,
+    descricao,
+    prioridade,
+    ordemProducao,
+    quantidade,
+    dataEntrega,
+  } = req.body;
 
   try {
     // Validação básica
     if (!cliente || !codigoPeca) {
       throw new Error("Cliente e código da peça são obrigatórios");
+    }
+
+    if (!ordemProducao) {
+      throw new Error(
+        "Número da Ordem de Produção (Nota Fiscal) é obrigatório"
+      );
     }
 
     // Converter prioridade para número conforme esperado pela API
@@ -397,12 +412,17 @@ app.post("/cadastro", async (req, res) => {
     if (prioridade === "alta") prioridadeNum = 5;
 
     // Criar a peça na API Django
+    // A API espera: ordem_producao_codigo, cliente (UUID), codigo, nome, descricao, quantidade, prioridade
     const pecaResponse = await api.post("/pecas/", {
+      ordem_producao_codigo: ordemProducao, // Número da NF - cria/associa OP automaticamente
+      cliente: cliente, // UUID do cliente (não converter para int)
       codigo: codigoPeca,
       nome: nomePeca || codigoPeca,
       descricao: descricao || "",
-      cliente: parseInt(cliente),
+      quantidade: parseInt(quantidade) || 1,
       prioridade: prioridadeNum,
+      data_entrega: dataEntrega || null,
+      status: "em_fila", // Status inicial
     });
 
     console.log("Peça cadastrada com sucesso:", pecaResponse.data);
@@ -466,74 +486,6 @@ app.post("/cadastro", async (req, res) => {
         error: errorMessage,
       });
     }
-  }
-});
-
-app.get("/atividades", async (req, res) => {
-  try {
-    // Buscar atividades da API
-    const atividadesResponse = await api.get(`/atividades/`);
-    const usuariosResponse = await api.get(`/usuarios/`);
-
-    let atividades = Array.isArray(atividadesResponse.data)
-      ? atividadesResponse.data
-      : atividadesResponse.data.results || [];
-
-    const usuarios = Array.isArray(usuariosResponse.data)
-      ? usuariosResponse.data
-      : usuariosResponse.data.results || [];
-
-    // Criar mapa de usuários para lookup rápido
-    const usuariosMap = {};
-    usuarios.forEach((u) => {
-      usuariosMap[u.id] = `${u.first_name} ${u.last_name}`.trim() || u.email;
-    });
-
-    // Enriquecer dados de atividades com nomes de usuários e labels de prioridade
-    atividades = atividades.map((atividade) => ({
-      ...atividade,
-      responsavel_nome: usuariosMap[atividade.responsavel] || "Não atribuído",
-      prioridade_label: getPrioridadeLabel(atividade.prioridade),
-      data_inicio_formatada: atividade.data_inicio
-        ? formatDate(atividade.data_inicio)
-        : "N/A",
-      data_fim_formatada: atividade.data_fim
-        ? formatDate(atividade.data_fim)
-        : "N/A",
-    }));
-
-    res.render("atividades", {
-      title: "Controle de Atividades - UsinaSoft",
-      user: req.session.user,
-      showHeader: true,
-      showNav: true,
-      showFooter: true,
-      currentPage: "atividades",
-      atividades,
-      error: null,
-      getStatusClass,
-      getStatusIcon,
-      getStatusLabel,
-      getPrioridadeLabel,
-      formatDate,
-    });
-  } catch (error) {
-    res.render("atividades", {
-      title: "Controle de Atividades - UsinaSoft",
-      user: req.session.user,
-      showHeader: true,
-      showNav: true,
-      showFooter: true,
-      currentPage: "atividades",
-      atividades: [],
-      error:
-        "Erro ao carregar atividades. Verifique sua autenticação e tente novamente.",
-      getStatusClass,
-      getStatusIcon,
-      getStatusLabel,
-      getPrioridadeLabel,
-      formatDate,
-    });
   }
 });
 

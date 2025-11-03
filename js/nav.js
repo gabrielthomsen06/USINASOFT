@@ -1,9 +1,4 @@
-const paginas = [
-  "index.html",
-  "producao.html",
-  "cadastro.html",
-  "atividades.html"
-];
+const paginas = ["index.html", "producao.html", "cadastro.html"];
 
 function voltar() {
   const atual = window.location.pathname.split("/").pop();

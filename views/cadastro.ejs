@@ -26,7 +26,7 @@
         <!-- Page Header -->
         <div class="text-center mb-5">
           <h1 class="display-4 fw-bold text-usinasoft-primary mb-3">
-            Cadastro de Peças
+            <i class="fas fa-cogs me-3"></i>Cadastro de Peças
           </h1>
           <p class="lead text-muted">
             Registre novas peças e ordens de produção
@@ -38,7 +38,9 @@
           <div class="col-lg-8">
             <div class="card shadow-lg border-0">
               <div class="card-header bg-white border-0 text-center py-4">
-                <h2 class="card-title h4 mb-0">Informações da Peça</h2>
+                <h2 class="card-title h4 mb-0">
+                  <i class="fas fa-wrench me-2"></i>Informações da Peça
+                </h2>
               </div>
 
               <div class="card-body p-4">
@@ -138,6 +140,43 @@
 
                   <div class="row g-3 mb-3">
                     <div class="col-md-6">
+                      <label for="ordemProducao" class="form-label"
+                        >Número da Nota Fiscal (OP)
+                        <span class="text-danger">*</span></label
+                      >
+                      <input
+                        type="text"
+                        id="ordemProducao"
+                        name="ordemProducao"
+                        class="form-control"
+                        placeholder="Ex: NF-12345"
+                        required
+                      />
+                      <small class="form-text text-muted">
+                        Número da Nota Fiscal que criará ou vinculará à Ordem de
+                        Produção
+                      </small>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="quantidade" class="form-label"
+                        >Quantidade <span class="text-danger">*</span></label
+                      >
+                      <input
+                        type="number"
+                        id="quantidade"
+                        name="quantidade"
+                        class="form-control"
+                        placeholder="Ex: 10"
+                        min="1"
+                        value="1"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
                       <label for="nomePeca" class="form-label"
                         >Nome da Peça</label
                       >
@@ -150,6 +189,20 @@
                       />
                     </div>
 
+                    <div class="col-md-6">
+                      <label for="dataEntrega" class="form-label"
+                        >Data de Entrega</label
+                      >
+                      <input
+                        type="date"
+                        id="dataEntrega"
+                        name="dataEntrega"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="row g-3 mb-3">
                     <div class="col-md-6">
                       <label for="prioridade" class="form-label"
                         >Prioridade</label

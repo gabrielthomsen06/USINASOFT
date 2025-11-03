@@ -181,17 +181,44 @@
   flex-grow: 1;
 }
 
+/* Modal customizações */
+.modal-backdrop {
+  z-index: 1040 !important;
+}
+
+.modal {
+  z-index: 1050 !important;
+}
+
+.modal-dialog {
+  z-index: 1060 !important;
+}
+
+.modal-content {
+  position: relative;
+  z-index: 1070 !important;
+}
+
+/* Garantir que inputs e botões no modal sejam clicáveis */
+.modal input,
+.modal textarea,
+.modal select,
+.modal button {
+  position: relative;
+  z-index: 1080 !important;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .login-title {
     font-size: 2rem;
   }
-  
+
   .login-logo {
     width: 60px;
     height: 60px;
   }
-  
+
   .menu-icon {
     font-size: 2.5rem;
   }

@@ -1,162 +1,397 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= title || 'UsinaSoft' %></title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- FontAwesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <!-- UsinaSoft Custom CSS -->
-    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css">
-</head>
-<body class="login-page">
-    <%- include('partials/header', { user: user, showNav: true, currentPage: 'cadastro' }) %>
-    
+    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css" />
+  </head>
+  <body class="login-page">
+    <%- include('partials/header', { user: user, showNav: true, currentPage:
+    'cadastro' }) %>
+
     <main class="main-content">
-        <div class="container py-5">
-            <!-- Page Header -->
-            <div class="text-center mb-5">
-                <h1 class="display-4 fw-bold text-usinasoft-primary mb-3">Cadastro de Peças</h1>
-                <p class="lead text-muted">Registre novas peças e ordens de produção</p>
-            </div>
-            
-            <!-- Form Card -->
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card shadow-lg border-0">
-                        <div class="card-header bg-white border-0 text-center py-4">
-                            <h2 class="card-title h4 mb-0">Informações da Peça</h2>
-                        </div>
-                        
-                        <div class="card-body p-4">
-                            <!-- Success Message -->
-                            <% if (typeof success !== 'undefined' && success) { %>
-                                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                    <i class="fas fa-check-circle me-2"></i>
-                                    Peça cadastrada com sucesso!
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            <% } %>
-                            
-                            <!-- Error Message -->
-                            <% if (typeof error !== 'undefined' && error) { %>
-                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <%= error %>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            <% } %>
-                            
-                            <!-- Form -->
-                            <form method="POST" action="/cadastro" data-validate>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-6">
-                                        <label for="cliente" class="form-label">Cliente <span class="text-danger">*</span></label>
-                                        <input 
-                                            type="text" 
-                                            id="cliente" 
-                                            name="cliente" 
-                                            class="form-control" 
-                                            placeholder="Nome do Cliente"
-                                            required
-                                        >
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <label for="numeroPedido" class="form-label">Número do Pedido <span class="text-danger">*</span></label>
-                                        <input 
-                                            type="text" 
-                                            id="numeroPedido" 
-                                            name="numeroPedido" 
-                                            class="form-control" 
-                                            placeholder="Número do Pedido"
-                                            required
-                                        >
-                                    </div>
-                                </div>
-                                
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-6">
-                                        <label for="codigoPeca" class="form-label">Código da Peça <span class="text-danger">*</span></label>
-                                        <input 
-                                            type="text" 
-                                            id="codigoPeca" 
-                                            name="codigoPeca" 
-                                            class="form-control" 
-                                            placeholder="Código da Peça"
-                                            required
-                                        >
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <label for="quantidade" class="form-label">Quantidade <span class="text-danger">*</span></label>
-                                        <input 
-                                            type="number" 
-                                            id="quantidade" 
-                                            name="quantidade" 
-                                            class="form-control" 
-                                            placeholder="Ex: 138"
-                                            min="1"
-                                            required
-                                        >
-                                    </div>
-                                </div>
-                                
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-6">
-                                        <label for="dataEntrega" class="form-label">Data de Entrega <span class="text-danger">*</span></label>
-                                        <input 
-                                            type="date" 
-                                            id="dataEntrega" 
-                                            name="dataEntrega" 
-                                            class="form-control"
-                                            required
-                                        >
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <label for="prioridade" class="form-label">Prioridade</label>
-                                        <select id="prioridade" name="prioridade" class="form-select">
-                                            <option value="">Selecione a prioridade</option>
-                                            <option value="baixa">Baixa</option>
-                                            <option value="media">Média</option>
-                                            <option value="alta">Alta</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label for="observacoes" class="form-label">Observações</label>
-                                    <textarea 
-                                        id="observacoes" 
-                                        name="observacoes" 
-                                        class="form-control" 
-                                        rows="4"
-                                        placeholder="Observações adicionais sobre a peça ou pedido"
-                                    ></textarea>
-                                </div>
-                                
-                                <div class="d-flex gap-3 justify-content-end">
-                                    <button type="button" class="btn btn-secondary" onclick="history.back()">
-                                        Cancelar
-                                    </button>
-                                    <button type="submit" class="btn btn-primary">
-                                        Cadastrar Peça
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <div class="container py-5">
+        <!-- Page Header -->
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold text-usinasoft-primary mb-3">
+            Cadastro de Peças
+          </h1>
+          <p class="lead text-muted">
+            Registre novas peças e ordens de produção
+          </p>
         </div>
 
+        <!-- Form Card -->
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+              <div class="card-header bg-white border-0 text-center py-4">
+                <h2 class="card-title h4 mb-0">Informações da Peça</h2>
+              </div>
+
+              <div class="card-body p-4">
+                <!-- Success Message -->
+                <% if (typeof success !== 'undefined' && success) { %>
+                <div
+                  class="alert alert-success alert-dismissible fade show"
+                  role="alert"
+                >
+                  <i class="fas fa-check-circle me-2"></i>
+                  Peça cadastrada com sucesso!
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                  ></button>
+                </div>
+                <% } %>
+
+                <!-- Error Message -->
+                <% if (typeof error !== 'undefined' && error) { %>
+                <div
+                  class="alert alert-danger alert-dismissible fade show"
+                  role="alert"
+                >
+                  <i class="fas fa-exclamation-circle me-2"></i>
+                  <%= error %>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                  ></button>
+                </div>
+                <% } %>
+
+                <!-- Form -->
+                <form method="POST" action="/cadastro" data-validate>
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                      <label for="cliente" class="form-label"
+                        >Cliente <span class="text-danger">*</span></label
+                      >
+                      <div class="input-group">
+                        <select
+                          id="cliente"
+                          name="cliente"
+                          class="form-select"
+                          required
+                        >
+                          <option value="">Selecione um cliente</option>
+                          <% if (clientes && clientes.length > 0) { %> <%
+                          clientes.forEach(cliente => { %>
+                          <option value="<%= cliente.id %>">
+                            <%= cliente.nome %>
+                          </option>
+                          <% }); %> <% } %>
+                        </select>
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary"
+                          data-bs-toggle="modal"
+                          data-bs-target="#modalNovoCliente"
+                          title="Cadastrar novo cliente"
+                        >
+                          <i class="fas fa-plus"></i>
+                        </button>
+                      </div>
+                      <small class="form-text text-muted">
+                        Cliente não existe?
+                        <a
+                          href="#"
+                          data-bs-toggle="modal"
+                          data-bs-target="#modalNovoCliente"
+                        >
+                          Clique aqui para cadastrar
+                        </a>
+                        ou
+                        <a href="/clientes">acesse a página de clientes</a>
+                      </small>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="codigoPeca" class="form-label"
+                        >Código da Peça
+                        <span class="text-danger">*</span></label
+                      >
+                      <input
+                        type="text"
+                        id="codigoPeca"
+                        name="codigoPeca"
+                        class="form-control"
+                        placeholder="Ex: PEC-001"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                      <label for="nomePeca" class="form-label"
+                        >Nome da Peça</label
+                      >
+                      <input
+                        type="text"
+                        id="nomePeca"
+                        name="nomePeca"
+                        class="form-control"
+                        placeholder="Nome descritivo da peça"
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="prioridade" class="form-label"
+                        >Prioridade</label
+                      >
+                      <select
+                        id="prioridade"
+                        name="prioridade"
+                        class="form-select"
+                      >
+                        <option value="baixa">Baixa</option>
+                        <option value="media" selected>Média</option>
+                        <option value="alta">Alta</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label for="descricao" class="form-label">Descrição</label>
+                    <textarea
+                      id="descricao"
+                      name="descricao"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Descrição detalhada da peça, especificações técnicas, etc."
+                    ></textarea>
+                  </div>
+
+                  <div class="d-flex gap-3 justify-content-end">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      onclick="history.back()"
+                    >
+                      Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                      Cadastrar Peça
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
-    
+
     <%- include('partials/footer') %>
-    
+
+    <!-- Modal Cadastro de Cliente -->
+    <div
+      class="modal fade"
+      id="modalNovoCliente"
+      tabindex="-1"
+      aria-labelledby="modalNovoClienteLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="modalNovoClienteLabel">
+              <i class="fas fa-user-plus me-2"></i>Cadastro Rápido de Cliente
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="modalAlert" class="alert d-none" role="alert"></div>
+
+            <form id="formNovoCliente">
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="modalNome" class="form-label"
+                    >Nome do Cliente <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="modalNome"
+                    name="nome"
+                    class="form-control"
+                    placeholder="Nome completo ou razão social"
+                    required
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label for="modalCnpj" class="form-label">CNPJ/CPF</label>
+                  <input
+                    type="text"
+                    id="modalCnpj"
+                    name="cnpj"
+                    class="form-control"
+                    placeholder="00.000.000/0000-00"
+                  />
+                </div>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="modalEmail" class="form-label">E-mail</label>
+                  <input
+                    type="email"
+                    id="modalEmail"
+                    name="email"
+                    class="form-control"
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label for="modalTelefone" class="form-label">Telefone</label>
+                  <input
+                    type="tel"
+                    id="modalTelefone"
+                    name="telefone"
+                    class="form-control"
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="modalEndereco" class="form-label">Endereço</label>
+                <textarea
+                  id="modalEndereco"
+                  name="endereco"
+                  class="form-control"
+                  rows="2"
+                  placeholder="Endereço completo do cliente"
+                ></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="fas fa-times me-2"></i>Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" id="btnSalvarCliente">
+              <i class="fas fa-save me-2"></i>Salvar Cliente
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/main.js"></script>
-</body>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const btnSalvarCliente = document.getElementById("btnSalvarCliente");
+        const formNovoCliente = document.getElementById("formNovoCliente");
+        const modalAlert = document.getElementById("modalAlert");
+        const selectCliente = document.getElementById("cliente");
+        const modal = new bootstrap.Modal(
+          document.getElementById("modalNovoCliente")
+        );
+
+        btnSalvarCliente.addEventListener("click", async function () {
+          // Validar formulário
+          if (!formNovoCliente.checkValidity()) {
+            formNovoCliente.reportValidity();
+            return;
+          }
+
+          // Obter dados do formulário
+          const formData = new FormData(formNovoCliente);
+          const clienteData = Object.fromEntries(formData.entries());
+
+          // Desabilitar botão durante requisição
+          btnSalvarCliente.disabled = true;
+          btnSalvarCliente.innerHTML =
+            '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+
+          try {
+            const response = await fetch("/clientes", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify(clienteData),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              // Adicionar novo cliente ao select
+              const option = document.createElement("option");
+              option.value = result.cliente.id;
+              option.textContent = result.cliente.nome;
+              option.selected = true;
+              selectCliente.appendChild(option);
+
+              // Mostrar mensagem de sucesso
+              modalAlert.className = "alert alert-success";
+              modalAlert.textContent =
+                result.message || "Cliente cadastrado com sucesso!";
+              modalAlert.classList.remove("d-none");
+
+              // Limpar formulário
+              formNovoCliente.reset();
+
+              // Fechar modal após 1 segundo
+              setTimeout(() => {
+                modal.hide();
+                modalAlert.classList.add("d-none");
+              }, 1500);
+            } else {
+              throw new Error(result.error || "Erro ao cadastrar cliente");
+            }
+          } catch (error) {
+            console.error("Erro:", error);
+            modalAlert.className = "alert alert-danger";
+            modalAlert.textContent =
+              error.message || "Erro ao cadastrar cliente. Tente novamente.";
+            modalAlert.classList.remove("d-none");
+          } finally {
+            // Reabilitar botão
+            btnSalvarCliente.disabled = false;
+            btnSalvarCliente.innerHTML =
+              '<i class="fas fa-save me-2"></i>Salvar Cliente';
+          }
+        });
+
+        // Limpar mensagens ao abrir o modal
+        document
+          .getElementById("modalNovoCliente")
+          .addEventListener("show.bs.modal", function () {
+            modalAlert.classList.add("d-none");
+            formNovoCliente.reset();
+          });
+      });
+    </script>
+  </body>
 </html>

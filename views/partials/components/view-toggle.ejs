@@ -1,0 +1,47 @@
+<%# Component: View Toggle Description: A reusable component to switch between
+"Cards" and "Table" views. Parameters: - viewChangeFunction (String): The name
+of the JavaScript function to call on change. - resultsCounterId (String): The
+ID of the span element that displays the results count. - initialCount (Number):
+The initial number of items to display in the counter. %> <%# Component: View
+Toggle Description: A reusable component to switch between "Cards" and "Table"
+views. Parameters: - viewChangeFunction (String): The name of the JavaScript
+function to call on change. - resultsCounterId (String): The ID of the span
+element that displays the results count. - initialCount (Number): The initial
+number of items to display in the counter. %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="btn-group" role="group" aria-label="View toggle">
+    <input
+      type="radio"
+      class="btn-check"
+      name="viewType"
+      id="viewCards"
+      value="cards"
+      checked
+      onchange="<%- viewChangeFunction %>('cards')"
+    />
+    <label class="btn btn-outline-primary" for="viewCards">
+      <i class="fas fa-th-large me-2"></i>Cards
+    </label>
+
+    <input
+      type="radio"
+      class="btn-check"
+      name="viewType"
+      id="viewTable"
+      value="table"
+      onchange="<%- viewChangeFunction %>('table')"
+    />
+    <label class="btn btn-outline-primary" for="viewTable">
+      <i class="fas fa-list me-2"></i>Tabela
+    </label>
+  </div>
+
+  <div>
+    <span class="text-dark">
+      <i class="fas fa-info-circle me-2"></i>
+      <span id="<%- resultsCounterId %>"><%= initialCount %></span>
+      resultado(s)
+    </span>
+  </div>
+</div>

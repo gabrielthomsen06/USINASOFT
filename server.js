@@ -11,6 +11,7 @@ const {
   getStatusClass,
   getStatusIcon,
   getStatusLabel,
+  getPrioridadeLabel,
   formatDate,
 } = require("./utils/statusHelpers");
 
@@ -80,35 +81,61 @@ const requireAuth = (req, res, next) => {
   }
 };
 
+// Middleware para adicionar token de autenticação às chamadas da API
+const addAuthToken = (req, res, next) => {
+  if (req.session.token) {
+    api.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${req.session.token}`;
+  }
+  next();
+};
+
 // ===== ROTAS DE AUTENTICAÇÃO =====
 app.get("/login", (req, res) => {
   res.render("login", {
     title: "Login - UsinaSoft",
     error: req.query.error,
+    success: req.query.success,
   });
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  // Simulação de autenticação (substituir por lógica real)
-  if (email && password) {
-    req.session.user = {
+  try {
+    const response = await axios.post(`${apiBaseUrl}auth/token/`, {
       email,
-      name: "Usuário",
-      id: 1,
-      role: "admin",
-    };
+      password,
+    });
+
+    const { access, refresh } = response.data;
+
+    // Armazenar tokens e informações do usuário na sessão
+    req.session.token = access;
+    req.session.refreshToken = refresh;
+    req.session.user = { email }; // Você pode decodificar o token para obter mais dados
+
+    // Configurar o token para chamadas futuras da API nesta sessão
+    api.defaults.headers.common["Authorization"] = `Bearer ${access}`;
+
     res.redirect("/menu");
-  } else {
+  } catch (error) {
+    let errorMessage = "Erro ao fazer login. Verifique suas credenciais.";
+    if (error.response && error.response.status === 401) {
+      errorMessage = "Credenciais inválidas. Tente novamente.";
+    }
     res.render("login", {
       title: "Login - UsinaSoft",
-      error: "Email e senha são obrigatórios",
+      error: errorMessage,
     });
   }
 });
 
 app.get("/logout", (req, res) => {
+  // Limpar o token do header da API
+  delete api.defaults.headers.common["Authorization"];
+
   req.session.destroy((err) => {
     if (err) {
       console.error("Erro ao destruir sessão:", err);
@@ -126,25 +153,17 @@ app.get("/cadastro-usuario", (req, res) => {
   });
 });
 
-app.post("/cadastro-usuario", (req, res) => {
+app.post("/cadastro-usuario", async (req, res) => {
   const {
     nome,
+    sobrenome,
     email,
     senha,
     confirmarSenha,
     telefone,
     cargo,
     empresa,
-    aceitarTermos,
   } = req.body;
-
-  // Validações básicas
-  if (!nome || !email || !senha || !confirmarSenha || !cargo) {
-    return res.render("cadastro-usuario", {
-      title: "Cadastro de Usuário - UsinaSoft",
-      error: "Todos os campos obrigatórios devem ser preenchidos",
-    });
-  }
 
   if (senha !== confirmarSenha) {
     return res.render("cadastro-usuario", {
@@ -153,40 +172,38 @@ app.post("/cadastro-usuario", (req, res) => {
     });
   }
 
-  if (senha.length < 6) {
-    return res.render("cadastro-usuario", {
+  try {
+    await axios.post(`${apiBaseUrl}usuarios/`, {
+      first_name: nome,
+      last_name: sobrenome,
+      email,
+      password: senha,
+      // Outros campos podem ser necessários dependendo da sua API
+    });
+
+    res.redirect(
+      "/login?success=Conta criada com sucesso! Faça login para acessar o sistema."
+    );
+  } catch (error) {
+    let errorMessage = "Erro ao criar a conta.";
+    if (error.response && error.response.data) {
+      // Tenta extrair uma mensagem de erro mais específica da API
+      const apiErrors = error.response.data;
+      errorMessage = Object.values(apiErrors).flat().join(" ");
+    }
+    res.render("cadastro-usuario", {
       title: "Cadastro de Usuário - UsinaSoft",
-      error: "A senha deve ter pelo menos 6 caracteres",
+      error: errorMessage,
     });
   }
-
-  if (!aceitarTermos) {
-    return res.render("cadastro-usuario", {
-      title: "Cadastro de Usuário - UsinaSoft",
-      error: "Você deve aceitar os termos de uso",
-    });
-  }
-
-  // Aqui você salvaria no banco de dados
-  console.log("Novo usuário cadastrado:", {
-    nome,
-    email,
-    senha: "***", // Nunca logar a senha real
-    telefone,
-    cargo,
-    empresa,
-    dataCadastro: new Date(),
-    ativo: true,
-  });
-
-  // Simular sucesso no cadastro
-  res.redirect(
-    "/login?success=Conta criada com sucesso! Faça login para acessar o sistema."
-  );
 });
 
+// Aplicar middleware de autenticação e token a todas as rotas principais
+app.use(requireAuth);
+app.use(addAuthToken);
+
 // ===== ROTAS PRINCIPAIS =====
-app.get("/menu", requireAuth, (req, res) => {
+app.get("/menu", (req, res) => {
   res.render("menu", {
     title: "Menu Principal - UsinaSoft",
     user: req.session.user,
@@ -197,65 +214,266 @@ app.get("/menu", requireAuth, (req, res) => {
   });
 });
 
-app.get("/cadastro", requireAuth, (req, res) => {
-  const success = req.query.success === "true";
+// ===== ROTAS DE CLIENTES =====
+app.get("/clientes", async (req, res) => {
+  try {
+    const clientesResponse = await api.get("/clientes/");
+    const clientes = Array.isArray(clientesResponse.data)
+      ? clientesResponse.data
+      : clientesResponse.data.results || [];
 
-  res.render("cadastro", {
-    title: "Cadastro de Peças - UsinaSoft",
-    user: req.session.user,
-    showHeader: true,
-    showNav: true,
-    showFooter: true,
-    currentPage: "cadastro",
-    success,
-  });
+    res.render("clientes", {
+      title: "Cadastro de Clientes - UsinaSoft",
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: "clientes",
+      clientes,
+      success: req.query.success === "true",
+      error: null,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar clientes:", error.message);
+    res.render("clientes", {
+      title: "Cadastro de Clientes - UsinaSoft",
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: "clientes",
+      clientes: [],
+      success: false,
+      error: "Erro ao carregar clientes. Tente novamente.",
+    });
+  }
 });
 
-app.post("/cadastro", requireAuth, (req, res) => {
-  const {
-    cliente,
-    numeroPedido,
-    codigoPeca,
-    quantidade,
-    dataEntrega,
-    prioridade,
-    observacoes,
-  } = req.body;
+app.post("/clientes", async (req, res) => {
+  const { nome, cnpj, email, telefone, endereco } = req.body;
 
-  // Validação básica
-  if (!cliente || !numeroPedido || !codigoPeca || !quantidade || !dataEntrega) {
-    return res.render("cadastro", {
+  try {
+    if (!nome) {
+      throw new Error("Nome do cliente é obrigatório");
+    }
+
+    const clienteResponse = await api.post("/clientes/", {
+      nome,
+      cnpj: cnpj || "",
+      email: email || "",
+      telefone: telefone || "",
+      endereco: endereco || "",
+    });
+
+    console.log("Cliente cadastrado com sucesso:", clienteResponse.data);
+
+    // Se a requisição for AJAX, retornar JSON
+    if (req.headers.accept && req.headers.accept.includes("application/json")) {
+      return res.json({
+        success: true,
+        cliente: clienteResponse.data,
+        message: "Cliente cadastrado com sucesso!",
+      });
+    }
+
+    res.redirect("/clientes?success=true");
+  } catch (error) {
+    console.error("Erro ao cadastrar cliente:", error);
+
+    let errorMessage = "Erro ao cadastrar o cliente. Tente novamente.";
+
+    if (error.response) {
+      if (error.response.status === 401) {
+        errorMessage = "Sessão expirada. Faça login novamente.";
+        if (
+          req.headers.accept &&
+          req.headers.accept.includes("application/json")
+        ) {
+          return res.status(401).json({ success: false, error: errorMessage });
+        }
+        return res.redirect("/login?error=" + encodeURIComponent(errorMessage));
+      }
+
+      if (error.response.data) {
+        const apiErrors = error.response.data;
+        errorMessage = Object.entries(apiErrors)
+          .map(([field, messages]) => {
+            const msgs = Array.isArray(messages) ? messages : [messages];
+            return `${field}: ${msgs.join(", ")}`;
+          })
+          .join("; ");
+      }
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    // Se a requisição for AJAX, retornar JSON
+    if (req.headers.accept && req.headers.accept.includes("application/json")) {
+      return res.status(400).json({ success: false, error: errorMessage });
+    }
+
+    try {
+      const clientesResponse = await api.get("/clientes/");
+      const clientes = Array.isArray(clientesResponse.data)
+        ? clientesResponse.data
+        : clientesResponse.data.results || [];
+
+      res.render("clientes", {
+        title: "Cadastro de Clientes - UsinaSoft",
+        user: req.session.user,
+        showHeader: true,
+        showNav: true,
+        showFooter: true,
+        currentPage: "clientes",
+        clientes,
+        success: false,
+        error: errorMessage,
+      });
+    } catch (clientError) {
+      res.render("clientes", {
+        title: "Cadastro de Clientes - UsinaSoft",
+        user: req.session.user,
+        showHeader: true,
+        showNav: true,
+        showFooter: true,
+        currentPage: "clientes",
+        clientes: [],
+        success: false,
+        error: errorMessage,
+      });
+    }
+  }
+});
+
+app.get("/cadastro", async (req, res) => {
+  const success = req.query.success === "true";
+
+  try {
+    // Buscar lista de clientes para o select
+    const clientesResponse = await api.get("/clientes/");
+    const clientes = Array.isArray(clientesResponse.data)
+      ? clientesResponse.data
+      : clientesResponse.data.results || [];
+
+    res.render("cadastro", {
       title: "Cadastro de Peças - UsinaSoft",
       user: req.session.user,
       showHeader: true,
       showNav: true,
       showFooter: true,
       currentPage: "cadastro",
-      error: "Todos os campos obrigatórios devem ser preenchidos",
+      success,
+      clientes,
+      error: null,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar clientes:", error.message);
+    res.render("cadastro", {
+      title: "Cadastro de Peças - UsinaSoft",
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: "cadastro",
+      success: false,
+      clientes: [],
+      error: "Erro ao carregar dados. Tente novamente.",
     });
   }
-
-  // Aqui você salvaria no banco de dados
-  console.log("Nova peça cadastrada:", {
-    cliente,
-    numeroPedido,
-    codigoPeca,
-    quantidade: parseInt(quantidade),
-    dataEntrega,
-    prioridade,
-    observacoes,
-    dataCadastro: new Date(),
-    usuario: req.session.user.email,
-  });
-
-  res.redirect("/cadastro?success=true");
 });
 
-app.get("/atividades", requireAuth, async (req, res) => {
+app.post("/cadastro", async (req, res) => {
+  const { cliente, codigoPeca, nomePeca, descricao, prioridade } = req.body;
+
+  try {
+    // Validação básica
+    if (!cliente || !codigoPeca) {
+      throw new Error("Cliente e código da peça são obrigatórios");
+    }
+
+    // Converter prioridade para número conforme esperado pela API
+    let prioridadeNum = 1; // baixa
+    if (prioridade === "media") prioridadeNum = 3;
+    if (prioridade === "alta") prioridadeNum = 5;
+
+    // Criar a peça na API Django
+    const pecaResponse = await api.post("/pecas/", {
+      codigo: codigoPeca,
+      nome: nomePeca || codigoPeca,
+      descricao: descricao || "",
+      cliente: parseInt(cliente),
+      prioridade: prioridadeNum,
+    });
+
+    console.log("Peça cadastrada com sucesso:", pecaResponse.data);
+
+    res.redirect("/cadastro?success=true");
+  } catch (error) {
+    console.error("Erro ao cadastrar peça:", error);
+
+    let errorMessage = "Erro ao cadastrar a peça. Tente novamente.";
+
+    if (error.response) {
+      // A API retornou um erro
+      console.error("Resposta de erro da API:", error.response.data);
+      console.error("Status:", error.response.status);
+
+      if (error.response.status === 401) {
+        errorMessage = "Sessão expirada. Faça login novamente.";
+        return res.redirect("/login?error=" + encodeURIComponent(errorMessage));
+      }
+
+      if (error.response.data) {
+        const apiErrors = error.response.data;
+        errorMessage = Object.entries(apiErrors)
+          .map(([field, messages]) => {
+            const msgs = Array.isArray(messages) ? messages : [messages];
+            return `${field}: ${msgs.join(", ")}`;
+          })
+          .join("; ");
+      }
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    try {
+      const clientesResponse = await api.get("/clientes/");
+      const clientes = Array.isArray(clientesResponse.data)
+        ? clientesResponse.data
+        : clientesResponse.data.results || [];
+
+      res.render("cadastro", {
+        title: "Cadastro de Peças - UsinaSoft",
+        user: req.session.user,
+        showHeader: true,
+        showNav: true,
+        showFooter: true,
+        currentPage: "cadastro",
+        success: false,
+        clientes,
+        error: errorMessage,
+      });
+    } catch (clientError) {
+      res.render("cadastro", {
+        title: "Cadastro de Peças - UsinaSoft",
+        user: req.session.user,
+        showHeader: true,
+        showNav: true,
+        showFooter: true,
+        currentPage: "cadastro",
+        success: false,
+        clientes: [],
+        error: errorMessage,
+      });
+    }
+  }
+});
+
+app.get("/atividades", async (req, res) => {
   try {
     // Buscar atividades da API
-    const atividadesResponse = await axios.get(`${apiBaseUrl}atividades/`);
-    const usuariosResponse = await axios.get(`${apiBaseUrl}usuarios/`);
+    const atividadesResponse = await api.get(`/atividades/`);
+    const usuariosResponse = await api.get(`/usuarios/`);
 
     let atividades = Array.isArray(atividadesResponse.data)
       ? atividadesResponse.data
@@ -271,10 +489,11 @@ app.get("/atividades", requireAuth, async (req, res) => {
       usuariosMap[u.id] = `${u.first_name} ${u.last_name}`.trim() || u.email;
     });
 
-    // Enriquecer dados de atividades com nomes de usuários
+    // Enriquecer dados de atividades com nomes de usuários e labels de prioridade
     atividades = atividades.map((atividade) => ({
       ...atividade,
       responsavel_nome: usuariosMap[atividade.responsavel] || "Não atribuído",
+      prioridade_label: getPrioridadeLabel(atividade.prioridade),
       data_inicio_formatada: atividade.data_inicio
         ? formatDate(atividade.data_inicio)
         : "N/A",
@@ -295,6 +514,7 @@ app.get("/atividades", requireAuth, async (req, res) => {
       getStatusClass,
       getStatusIcon,
       getStatusLabel,
+      getPrioridadeLabel,
       formatDate,
     });
   } catch (error) {
@@ -306,17 +526,81 @@ app.get("/atividades", requireAuth, async (req, res) => {
       showFooter: true,
       currentPage: "atividades",
       atividades: [],
-      error: "Erro ao carregar atividades. Tente novamente.",
+      error:
+        "Erro ao carregar atividades. Verifique sua autenticação e tente novamente.",
       getStatusClass,
       getStatusIcon,
       getStatusLabel,
+      getPrioridadeLabel,
       formatDate,
     });
   }
 });
 
+// ROTA DE INDICADORES /indicadores
+app.get("/indicadores", async (req, res) => {
+  try {
+    const { start, end, date_field } = req.query;
+
+    const params = {};
+    if (start) params.start = start;
+    if (end) params.end = end;
+    if (date_field) params.date_field = date_field;
+
+    const indicadoresResponse = await api.get(`/indicadores/summary/`, {
+      params,
+    });
+    const indicadores = indicadoresResponse.data;
+
+    // Normalizar os dados para garantir que todas as chaves existam
+    if (indicadores) {
+      const defaultStatus = {
+        aberta: 0,
+        em_andamento: 0,
+        pausada: 0,
+        concluida: 0,
+        cancelada: 0,
+      };
+      indicadores.por_status = { ...defaultStatus, ...indicadores.por_status };
+
+      const defaultAgrupado = {
+        emFila: 0,
+        emAndamento: 0,
+        concluidas: 0,
+      };
+      indicadores.agrupado = { ...defaultAgrupado, ...indicadores.agrupado };
+    }
+
+    res.render("indicadores", {
+      title: "Indicadores de Produção - UsinaSoft",
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: "indicadores",
+      indicadores,
+      query: req.query, // Passar os query params para preencher os filtros
+      error: null,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar indicadores:", error.message);
+    res.render("indicadores", {
+      title: "Indicadores de Produção - UsinaSoft",
+      user: req.session.user,
+      showHeader: true,
+      showNav: true,
+      showFooter: true,
+      currentPage: "indicadores",
+      indicadores: null,
+      query: req.query,
+      error:
+        "Erro ao carregar os indicadores. Verifique sua autenticação e tente novamente.",
+    });
+  }
+});
+
 //ROTA DE PRODUCAO /producao
-app.get("/producao", requireAuth, async (req, res) => {
+app.get("/producao", async (req, res) => {
   try {
     // Fetch production orders
     const opsResponse = await api.get("/ops/");
@@ -381,7 +665,8 @@ app.get("/producao", requireAuth, async (req, res) => {
       showFooter: true,
       currentPage: "producao",
       producao: [],
-      error: "Erro ao buscar dados da API",
+      error:
+        "Erro ao buscar dados da API. Verifique sua autenticação e tente novamente.",
       getStatusClass,
       getStatusIcon,
       getStatusLabel,
@@ -390,7 +675,7 @@ app.get("/producao", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/indicadores", requireAuth, (req, res) => {
+app.get("/indicadores", (req, res) => {
   // Dados mockados para indicadores
   const indicadores = {
     emFila: 32,
@@ -411,7 +696,11 @@ app.get("/indicadores", requireAuth, (req, res) => {
 
 // Rota raiz redireciona para login
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  if (req.session.user) {
+    res.redirect("/menu");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.listen(PORT, () => {

@@ -228,36 +228,23 @@
           <!-- Main Activities Section -->
           <section class="activities-main">
             <!-- View Toggle -->
-            <div class="view-toggle">
-              <button
-                class="toggle-btn active"
-                onclick="mudarView('cards')"
-                data-view="cards"
-              >
-                <i class="fas fa-th"></i> Cards
-              </button>
-              <button
-                class="toggle-btn"
-                onclick="mudarView('table')"
-                data-view="table"
-              >
-                <i class="fas fa-list"></i> Tabela
-              </button>
-              <span class="results-counter">
-                <i class="fas fa-info-circle"></i>
-                <span id="results-count">0</span>
-                resultado(s)
-              </span>
-            </div>
+            <%- include('partials/components/view-toggle', {
+              viewChangeFunction: 'mudarView',
+              resultsCounterId: 'results-count',
+              initialCount: atividades.length
+            }) %>
 
             <!-- Cards View -->
-            <div class="activities-grid" id="cards-view">
+            <div class="activities-grid" id="cardsView">
               <% atividades.forEach((atividade, index)=> { %>
               <div
                 class="activity-card"
                 data-id="<%= atividade.id %>"
                 data-status="<%= atividade.status %>"
-                data-prioridade="<%= atividade.prioridade %>"
+                data-prioridade="<%= getPrioridadeLabel(atividade.prioridade) %>"
+                data-titulo="<%= atividade.titulo.toLowerCase() %>"
+                data-start-date="<%= atividade.data_inicio %>"
+                data-end-date="<%= atividade.data_fim %>"
               >
                 <div class="card-header-section">
                   <div class="card-header-info">
@@ -267,7 +254,7 @@
                     </p>
                   </div>
                   <div class="card-status-badge">
-                    <span class="status-badge status-<%= atividade.status %>">
+                    <span class="status-badge <%= getStatusClass(atividade.status) %>">
                       <i class="<%= getStatusIcon(atividade.status) %>"></i>
                       <%= getStatusLabel(atividade.status) %>
                     </span>
@@ -289,9 +276,9 @@
                         <i class="fas fa-flag"></i> Prioridade
                       </span>
                       <span
-                        class="info-value priority-<%= atividade.prioridade %>"
+                        class="info-value priority-<%= getPrioridadeLabel(atividade.prioridade) %>"
                       >
-                        <%= atividade.prioridade || 'Normal' %>
+                        <%= getPrioridadeLabel(atividade.prioridade) || 'Normal' %>
                       </span>
                     </div>
                   </div>
@@ -328,27 +315,32 @@
                 </div>
 
                 <div class="card-footer-section">
-                  <% if (atividade.status !=='concluida' && atividade.status
-                  !=='cancelada' ) { %>
-                  <button
-                    class="btn btn-action btn-primary"
-                    onclick="verDetalhes(<%= atividade.id %>)"
-                  >
-                    <i class="fas fa-eye"></i> Detalhes
-                  </button>
-                  <button
-                    class="btn btn-action btn-secondary"
-                    onclick="editarAtividade(<%= atividade.id %>)"
-                  >
-                    <i class="fas fa-edit"></i> Editar
-                  </button>
-                  <% } %>
-                  <button
-                    class="btn btn-action btn-outline-danger"
-                    onclick="removerAtividade(<%= atividade.id %>)"
-                  >
-                    <i class="fas fa-trash"></i> Remover
-                  </button>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button
+                      class="btn btn-primary"
+                      onclick="verDetalhes(<%= atividade.id %>)"
+                      title="Ver detalhes"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <% if (atividade.status !=='concluida' && atividade.status
+                    !=='cancelada' ) { %>
+                    <button
+                      class="btn btn-secondary"
+                      onclick="editarAtividade(<%= atividade.id %>)"
+                      title="Editar"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <% } %>
+                    <button
+                      class="btn btn-outline-danger"
+                      onclick="removerAtividade(<%= atividade.id %>)"
+                      title="Remover"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
               <% }); %> <% if (atividades.length===0) { %>
@@ -361,83 +353,88 @@
             </div>
 
             <!-- Table View -->
-            <div class="activities-table" id="table-view" style="display: none">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Título</th>
-                    <th>Status</th>
-                    <th>Prioridade</th>
-                    <th>Responsável</th>
-                    <th>Início</th>
-                    <th>Fim</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% atividades.forEach(atividade=> { %>
-                  <tr
-                    class="activity-row"
-                    data-id="<%= atividade.id %>"
-                    data-status="<%= atividade.status %>"
-                    data-prioridade="<%= atividade.prioridade %>"
-                  >
-                    <td>
-                      <strong> <%= atividade.titulo %> </strong>
-                      <% if (atividade.descricao) { %>
-                      <br /><small class="text-muted">
-                        <%= atividade.descricao %>
-                      </small>
-                      <% } %>
-                    </td>
-                    <td>
-                      <span class="status-badge status-<%= atividade.status %>">
-                        <i class="<%= getStatusIcon(atividade.status) %>"></i>
-                        <%= getStatusLabel(atividade.status) %>
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        class="priority-badge priority-<%= atividade.prioridade %>"
-                      >
-                        <%= atividade.prioridade || 'Normal' %>
-                      </span>
-                    </td>
-                    <td><%= atividade.responsavel_nome %></td>
-                    <td><%= atividade.data_inicio_formatada %></td>
-                    <td><%= atividade.data_fim_formatada %></td>
-                    <td>
-                      <div class="action-buttons">
-                        <button
-                          class="btn btn-sm btn-primary"
-                          onclick="verDetalhes(<%= atividade.id %>)"
-                          title="Ver detalhes"
-                        >
-                          <i class="fas fa-eye"></i>
-                        </button>
-                        <% if (atividade.status !=='concluida' &&
-                        atividade.status !=='cancelada' ) { %>
-                        <button
-                          class="btn btn-sm btn-secondary"
-                          onclick="editarAtividade(<%= atividade.id %>)"
-                          title="Editar"
-                        >
-                          <i class="fas fa-edit"></i>
-                        </button>
+            <div class="activities-table d-none" id="tableView">
+              <div class="table-responsive">
+                <table class="table table-hover table-production">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Status</th>
+                      <th>Prioridade</th>
+                      <th>Responsável</th>
+                      <th>Início</th>
+                      <th>Fim</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% atividades.forEach(atividade=> { %>
+                    <tr
+                      class="activity-row"
+                      data-id="<%= atividade.id %>"
+                      data-status="<%= atividade.status %>"
+                      data-prioridade="<%= getPrioridadeLabel(atividade.prioridade) %>"
+                      data-titulo="<%= atividade.titulo.toLowerCase() %>"
+                      data-start-date="<%= atividade.data_inicio %>"
+                      data-end-date="<%= atividade.data_fim %>"
+                    >
+                      <td>
+                        <strong> <%= atividade.titulo %> </strong>
+                        <% if (atividade.descricao) { %>
+                        <br /><small class="text-muted">
+                          <%= atividade.descricao.substring(0, 60) %>...
+                        </small>
                         <% } %>
-                        <button
-                          class="btn btn-sm btn-outline-danger"
-                          onclick="removerAtividade(<%= atividade.id %>)"
-                          title="Remover"
+                      </td>
+                      <td>
+                        <span class="status-badge <%= getStatusClass(atividade.status) %>">
+                          <i class="<%= getStatusIcon(atividade.status) %>"></i>
+                          <%= getStatusLabel(atividade.status) %>
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          class="priority-badge priority-<%= getPrioridadeLabel(atividade.prioridade) %>"
                         >
-                          <i class="fas fa-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <% }); %>
-                </tbody>
-              </table>
+                          <%= getPrioridadeLabel(atividade.prioridade) || 'Normal' %>
+                        </span>
+                      </td>
+                      <td><%= atividade.responsavel_nome %></td>
+                      <td><%= atividade.data_inicio_formatada %></td>
+                      <td><%= atividade.data_fim_formatada %></td>
+                      <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                          <button
+                            class="btn btn-primary"
+                            onclick="verDetalhes(<%= atividade.id %>)"
+                            title="Ver detalhes"
+                          >
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <% if (atividade.status !=='concluida' &&
+                          atividade.status !=='cancelada' ) { %>
+                          <button
+                            class="btn btn-secondary"
+                            onclick="editarAtividade(<%= atividade.id %>)"
+                            title="Editar"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <% } %>
+                          <button
+                            class="btn btn-outline-danger"
+                            onclick="removerAtividade(<%= atividade.id %>)"
+                            title="Remover"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
 
               <% if (atividades.length===0) { %>
               <div class="empty-state">
@@ -461,12 +458,40 @@
 
     <script>
       const atividadesData = <%- JSON.stringify(atividades) %>;
-      console.log('Dados de atividades recebidos:', atividadesData);
-      if (atividadesData && atividadesData.length > 0) {
-          console.log('Primeira atividade:', atividadesData[0]);
-          console.log('Status da primeira atividade:', atividadesData[0].status);
+
+      function getStatusClass(status) {
+          const statusMap = {
+              'aberta': 'bg-info text-dark',
+              'em_andamento': 'bg-warning text-dark',
+              'pausada': 'bg-secondary text-white',
+              'concluida': 'bg-success text-white',
+              'cancelada': 'bg-danger text-white'
+          };
+          return statusMap[status.toLowerCase()] || 'bg-light text-dark';
       }
 
+      function getStatusIcon(status) {
+          const iconMap = {
+              'aberta': 'fas fa-hourglass-start',
+              'em_andamento': 'fas fa-spinner',
+              'pausada': 'fas fa-pause-circle',
+              'concluida': 'fas fa-check-circle',
+              'cancelada': 'fas fa-times-circle'
+          };
+          return iconMap[status.toLowerCase()] || 'fas fa-question-circle';
+      }
+
+      function getStatusLabel(status) {
+          const labelMap = {
+              'aberta': 'Na Fila',
+              'em_andamento': 'Em Andamento',
+              'pausada': 'Pausada',
+              'concluida': 'Concluída',
+              'cancelada': 'Cancelada'
+          };
+          return labelMap[status.toLowerCase()] || status;
+      }
+      
       // Initialize stats
       function atualizarEstatisticas() {
           const total = atividadesData.length;
@@ -480,7 +505,8 @@
           document.getElementById('completed-activities').textContent = concluidas;
       }
 
-      // Helper function to convert numeric priority to string
+      // Helper function to convert numeric priority to string - THIS IS NOW DEFINED ON THE SERVER
+      /*
       function getPrioridadeLabel(numericPriority) {
           if (!numericPriority) return null;
           if (numericPriority >= 4) return 'alta';
@@ -488,6 +514,7 @@
           if (numericPriority >= 1) return 'baixa';
           return null;
       }
+      */
 
       // Filter activities
       function filtrarAtividades() {
@@ -504,9 +531,8 @@
               // Se nenhum status foi selecionado, mostrar nenhum; caso contrário, verificar se o status está na lista
               const matchStatus = statusSelecionados.length > 0 && statusSelecionados.includes(atividade.status);
               
-              // Converter prioridade numérica para string e verificar
-              const prioridadeLabel = getPrioridadeLabel(atividade.prioridade);
-              const matchPrioridade = prioridades.length > 0 && prioridadeLabel && prioridades.includes(prioridadeLabel);
+              // A prioridade agora é uma string vinda do servidor
+              const matchPrioridade = prioridades.length > 0 && prioridades.includes(atividade.prioridade_label);
               
               const matchDataInicio = !dataInicio || (atividade.data_inicio && atividade.data_inicio >= dataInicio);
               const matchDataFim = !dataFim || (atividade.data_fim && atividade.data_fim <= dataFim);
@@ -515,18 +541,22 @@
           });
 
           // Update cards view
-          const cardsView = document.getElementById('cards-view');
-          cardsView.querySelectorAll('.activity-card').forEach(card => {
-              const atividade = atividadesData.find(a => a.id == card.dataset.id);
-              card.style.display = atividadesFiltradas.includes(atividade) ? '' : 'none';
-          });
+          const cardsView = document.getElementById('cardsView');
+          if (cardsView) {
+            cardsView.querySelectorAll('.activity-card').forEach(card => {
+                const isVisible = atividadesFiltradas.some(a => a.id == card.dataset.id);
+                card.style.display = isVisible ? '' : 'none';
+            });
+          }
 
           // Update table view
-          const tableView = document.getElementById('table-view');
-          tableView.querySelectorAll('.activity-row').forEach(row => {
-              const atividade = atividadesData.find(a => a.id == row.dataset.id);
-              row.style.display = atividadesFiltradas.includes(atividade) ? '' : 'none';
-          });
+          const tableView = document.getElementById('tableView');
+          if (tableView) {
+            tableView.querySelectorAll('.activity-row').forEach(row => {
+                const isVisible = atividadesFiltradas.some(a => a.id == row.dataset.id);
+                row.style.display = isVisible ? '' : 'none';
+            });
+          }
 
           document.getElementById('results-count').textContent = atividadesFiltradas.length;
       }
@@ -545,18 +575,15 @@
 
       // Change view
       function mudarView(view) {
-          document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-          document.querySelector(`[data-view="${view}"]`).classList.add('active');
-
-          const cardsView = document.getElementById('cards-view');
-          const tableView = document.getElementById('table-view');
+          const cardsView = document.getElementById('cardsView');
+          const tableView = document.getElementById('tableView');
 
           if (view === 'cards') {
-              cardsView.style.display = '';
-              tableView.style.display = 'none';
+              cardsView.classList.remove('d-none');
+              tableView.classList.add('d-none');
           } else {
-              cardsView.style.display = 'none';
-              tableView.style.display = '';
+              cardsView.classList.add('d-none');
+              tableView.classList.remove('d-none');
           }
       }
 

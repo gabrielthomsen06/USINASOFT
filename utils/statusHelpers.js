@@ -39,10 +39,21 @@ const getStatusLabel = (status) => {
   return labelMap[(status || "").toLowerCase()] || status || "Desconhecido";
 };
 
+const getPrioridadeLabel = (numericPriority) => {
+  if (numericPriority === null || numericPriority === undefined)
+    return "Normal";
+  if (numericPriority >= 4) return "alta";
+  if (numericPriority >= 2) return "media";
+  if (numericPriority >= 1) return "baixa";
+  return "Normal";
+};
+
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
-  return date.toLocaleDateString("pt-BR", {
+  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+  const correctedDate = new Date(date.getTime() + userTimezoneOffset);
+  return correctedDate.toLocaleDateString("pt-BR", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -53,5 +64,6 @@ module.exports = {
   getStatusClass,
   getStatusIcon,
   getStatusLabel,
+  getPrioridadeLabel,
   formatDate,
 };

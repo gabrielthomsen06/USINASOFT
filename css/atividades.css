@@ -193,14 +193,6 @@
 
 .filter-header {
   margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid transparent;
-  border-image: linear-gradient(
-      90deg,
-      var(--color-primary) 0%,
-      var(--color-primary-dark) 100%
-    )
-    1;
 }
 
 .filter-title {
@@ -300,10 +292,8 @@
 .view-toggle {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: 25px;
   gap: 15px;
-  flex-wrap: wrap;
 }
 
 .toggle-btn {
@@ -634,7 +624,7 @@
 }
 
 .activities-table thead th {
-  color: var(--color-white);
+  color: var(--color-text);
   font-weight: 700;
   padding: 20px;
   text-align: left;

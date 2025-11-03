@@ -1,0 +1,43 @@
+/*
+  CSS for the View Toggle Component
+*/
+
+.view-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.view-toggle .btn-group {
+  flex-shrink: 0;
+}
+
+.view-toggle .toggle-btn {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.view-toggle .toggle-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.view-toggle .toggle-btn.active {
+  background-color: var(--bs-primary);
+  color: #fff;
+  border-color: var(--bs-primary);
+}
+
+.view-toggle .results-counter {
+  font-size: 0.9rem;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #dee2e6;
+}

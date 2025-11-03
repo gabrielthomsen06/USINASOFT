@@ -1,586 +1,649 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= title || 'UsinaSoft' %>
-    </title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title || 'UsinaSoft' %></title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <!-- UsinaSoft Custom CSS -->
-    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css">
-    <link rel="stylesheet" href="/css/producao.css">
-</head>
+    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css" />
+    <link rel="stylesheet" href="/css/producao.css" />
+    <link rel="stylesheet" href="/css/components/view-toggle.css" />
+  </head>
 
-<body>
-    <%- include('partials/header', { user: user, showNav: true, currentPage: 'producao' }) %>
+  <body>
+    <%- include('partials/header', { user: user, showNav: true, currentPage:
+    'producao' }) %>
 
-        <main class="main-content">
-            <div class="container-fluid py-4">
-                <!-- Page Header -->
-                <div class="mb-5">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h1 class="display-5 fw-bold text-usinasoft-primary mb-2">
-                                <i class="fas fa-industry me-3"></i>Controle de Produção
-                            </h1>
-                            <p class="text-muted">Acompanhe as ordens de produção em tempo real</p>
-                        </div>
-                    </div>
+    <main class="main-content">
+      <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="mb-5">
+          <div class="row align-items-center">
+            <div class="col">
+              <h1 class="display-5 fw-bold text-usinasoft-primary mb-2">
+                <i class="fas fa-industry me-3"></i>Controle de Produção
+              </h1>
+              <p class="text-muted">
+                Acompanhe as ordens de produção em tempo real
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <% if (error) { %>
+        <div
+          class="alert alert-warning alert-dismissible fade show"
+          role="alert"
+        >
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <%= error %>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+        <% } %>
+
+        <!-- Stats Cards -->
+        <div class="row g-3 mb-5 text-dark">
+          <div class="col-md-6 col-lg-3">
+            <div class="stat-card stat-card-primary">
+              <div class="stat-card-body">
+                <div class="stat-number"><%= producao.length %></div>
+                <div class="stat-label">Total de Ordens</div>
+                <div class="stat-icon">
+                  <i class="fas fa-layer-group"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3">
+            <div class="stat-card stat-card-info">
+              <div class="stat-card-body">
+                <div class="stat-number">
+                  <%= producao.filter(p=> p.status === 'em_andamento' ||
+                  p.status === 'andamento').length %>
+                </div>
+                <div class="stat-label">Em Andamento</div>
+                <div class="stat-icon">
+                  <i class="fas fa-cogs"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3">
+            <div class="stat-card stat-card-warning">
+              <div class="stat-card-body">
+                <div class="stat-number">
+                  <%= producao.filter(p=> p.status === 'aberta' || p.status ===
+                  'fila').length %>
+                </div>
+                <div class="stat-label">Na Fila</div>
+                <div class="stat-icon">
+                  <i class="fas fa-hourglass-start"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3">
+            <div class="stat-card stat-card-success">
+              <div class="stat-card-body">
+                <div class="stat-number">
+                  <%= producao.filter(p=> p.status === 'concluida' || p.status
+                  === 'concluido').length %>
+                </div>
+                <div class="stat-label">Concluídas</div>
+                <div class="stat-icon">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- Filtros Sidebar -->
+          <div class="col-lg-3">
+            <div class="card filter-card">
+              <div class="card-header border-bottom">
+                <h5 class="card-title mb-0">
+                  <i class="fas fa-filter me-2"></i>Filtros
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-4">
+                  <label for="filtroCodigo" class="form-label fw-600">
+                    <i class="fas fa-search me-2"></i>Buscar Ordem
+                  </label>
+                  <input
+                    type="text"
+                    id="filtroCodigo"
+                    class="form-control"
+                    placeholder="Número da ordem..."
+                    onkeyup="filtrarProducao()"
+                  />
                 </div>
 
-                <!-- Error/Success Messages -->
-                <% if (error) { %>
-                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <%= error %>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="mb-4">
+                  <label class="form-label fw-600">
+                    <i class="fas fa-check-square me-2"></i>Status
+                  </label>
+                  <div class="status-filters">
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        id="filtroFila"
+                        class="form-check-input"
+                        onchange="filtrarProducao()"
+                      />
+                      <label for="filtroFila" class="form-check-label">
+                        <span
+                          class="status-dot"
+                          style="background-color: #fd7e14"
+                        ></span>
+                        Na Fila
+                      </label>
                     </div>
-                    <% } %>
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        id="filtroAndamento"
+                        class="form-check-input"
+                        onchange="filtrarProducao()"
+                      />
+                      <label for="filtroAndamento" class="form-check-label">
+                        <span
+                          class="status-dot"
+                          style="background-color: #0d6efd"
+                        ></span>
+                        Em Andamento
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        id="filtroConcluido"
+                        class="form-check-input"
+                        onchange="filtrarProducao()"
+                      />
+                      <label for="filtroConcluido" class="form-check-label">
+                        <span
+                          class="status-dot"
+                          style="background-color: #198754"
+                        ></span>
+                        Concluída
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        id="filtroPausada"
+                        class="form-check-input"
+                        onchange="filtrarProducao()"
+                      />
+                      <label for="filtroPausada" class="form-check-label">
+                        <span
+                          class="status-dot"
+                          style="background-color: #6c757d"
+                        ></span>
+                        Pausada
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        id="filtroCancelada"
+                        class="form-check-input"
+                        onchange="filtrarProducao()"
+                      />
+                      <label for="filtroCancelada" class="form-check-label">
+                        <span
+                          class="status-dot"
+                          style="background-color: #dc3545"
+                        ></span>
+                        Cancelada
+                      </label>
+                    </div>
+                  </div>
+                </div>
 
-                        <!-- Stats Cards -->
-                        <div class="row g-3 mb-5">
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card stat-card-primary">
-                                    <div class="stat-card-body">
-                                        <div class="stat-number">
-                                            <%= producao.length %>
-                                        </div>
-                                        <div class="stat-label">Total de Ordens</div>
-                                        <div class="stat-icon">
-                                            <i class="fas fa-layer-group"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="mb-4">
+                  <label for="filtroData" class="form-label fw-600">
+                    <i class="fas fa-calendar me-2"></i>Data de Entrega
+                  </label>
+                  <input
+                    type="date"
+                    id="filtroData"
+                    class="form-control"
+                    onchange="filtrarProducao()"
+                  />
+                </div>
 
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card stat-card-info">
-                                    <div class="stat-card-body">
-                                        <div class="stat-number">
-                                            <%= producao.filter(p=> p.status === 'em_andamento' || p.status ===
-                                                'andamento').length %>
-                                        </div>
-                                        <div class="stat-label">Em Andamento</div>
-                                        <div class="stat-icon">
-                                            <i class="fas fa-cogs"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <button
+                  class="btn btn-outline-secondary w-100"
+                  onclick="limparFiltros()"
+                >
+                  <i class="fas fa-redo me-2"></i>Limpar Filtros
+                </button>
+              </div>
+            </div>
+          </div>
 
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card stat-card-warning">
-                                    <div class="stat-card-body">
-                                        <div class="stat-number">
-                                            <%= producao.filter(p=> p.status === 'aberta' || p.status === 'fila').length
-                                                %>
-                                        </div>
-                                        <div class="stat-label">Na Fila</div>
-                                        <div class="stat-icon">
-                                            <i class="fas fa-hourglass-start"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+          <!-- Main Content -->
+          <div class="col-lg-9">
+            <!-- View Toggle -->
+            <%- include('partials/components/view-toggle', { viewChangeFunction:
+            'mudarView', resultsCounterId: 'totalResultados', initialCount:
+            producao.length }) %>
 
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card stat-card-success">
-                                    <div class="stat-card-body">
-                                        <div class="stat-number">
-                                            <%= producao.filter(p=> p.status === 'concluida' || p.status ===
-                                                'concluido').length %>
-                                        </div>
-                                        <div class="stat-label">Concluídas</div>
-                                        <div class="stat-icon">
-                                            <i class="fas fa-check-circle"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <!-- Cards View -->
+            <div id="cardsView" class="view-container">
+              <div class="row g-4" id="producaoCards">
+                <% if (producao.length> 0) { %> <% producao.forEach(item=> { %>
+                <div class="col-md-6 col-lg-6">
+                  <div
+                    class="production-card producao-card h-100"
+                    data-status="<%= item.status.toLowerCase() %>"
+                    data-numero="<%= item.numero || '' %>"
+                    data-data="<%= item.data_fim_prevista || '' %>"
+                  >
+                    <div class="card-header-custom">
+                      <div
+                        class="d-flex justify-content-between align-items-start"
+                      >
+                        <div>
+                          <h6 class="card-numero mb-1">
+                            OP #<%= item.numero %>
+                          </h6>
+                          <p class="card-text-sm text-muted mb-0">
+                            ID: <%= item.id %>
+                          </p>
                         </div>
+                        <span
+                          class="badge status-badge <%= getStatusClass(item.status) %>"
+                        >
+                          <i class="<%= getStatusIcon(item.status) %> me-1"></i>
+                          <%= getStatusLabel(item.status) %>
+                        </span>
+                      </div>
+                    </div>
 
-                        <div class="row g-4">
-                            <!-- Filtros Sidebar -->
-                            <div class="col-lg-3">
-                                <div class="card filter-card">
-                                    <div class="card-header border-bottom">
-                                        <h5 class="card-title mb-0">
-                                            <i class="fas fa-filter me-2"></i>Filtros
-                                        </h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-4">
-                                            <label for="filtroCodigo" class="form-label fw-600">
-                                                <i class="fas fa-search me-2"></i>Buscar Ordem
-                                            </label>
-                                            <input type="text" id="filtroCodigo" class="form-control"
-                                                placeholder="Número da ordem..." onkeyup="filtrarProducao()">
-                                        </div>
-
-                                        <div class="mb-4">
-                                            <label class="form-label fw-600">
-                                                <i class="fas fa-check-square me-2"></i>Status
-                                            </label>
-                                            <div class="status-filters">
-                                                <div class="form-check">
-                                                    <input type="checkbox" id="filtroFila" class="form-check-input"
-                                                        onchange="filtrarProducao()">
-                                                    <label for="filtroFila" class="form-check-label">
-                                                        <span class="status-dot"
-                                                            style="background-color: #fd7e14;"></span>
-                                                        Na Fila
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input type="checkbox" id="filtroAndamento" class="form-check-input"
-                                                        onchange="filtrarProducao()">
-                                                    <label for="filtroAndamento" class="form-check-label">
-                                                        <span class="status-dot"
-                                                            style="background-color: #0d6efd;"></span>
-                                                        Em Andamento
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input type="checkbox" id="filtroConcluido" class="form-check-input"
-                                                        onchange="filtrarProducao()">
-                                                    <label for="filtroConcluido" class="form-check-label">
-                                                        <span class="status-dot"
-                                                            style="background-color: #198754;"></span>
-                                                        Concluída
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input type="checkbox" id="filtroPausada" class="form-check-input"
-                                                        onchange="filtrarProducao()">
-                                                    <label for="filtroPausada" class="form-check-label">
-                                                        <span class="status-dot"
-                                                            style="background-color: #6c757d;"></span>
-                                                        Pausada
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input type="checkbox" id="filtroCancelada" class="form-check-input"
-                                                        onchange="filtrarProducao()">
-                                                    <label for="filtroCancelada" class="form-check-label">
-                                                        <span class="status-dot"
-                                                            style="background-color: #dc3545;"></span>
-                                                        Cancelada
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-4">
-                                            <label for="filtroData" class="form-label fw-600">
-                                                <i class="fas fa-calendar me-2"></i>Data de Entrega
-                                            </label>
-                                            <input type="date" id="filtroData" class="form-control"
-                                                onchange="filtrarProducao()">
-                                        </div>
-
-                                        <button class="btn btn-outline-secondary w-100" onclick="limparFiltros()">
-                                            <i class="fas fa-redo me-2"></i>Limpar Filtros
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Main Content -->
-                            <div class="col-lg-9">
-                                <!-- View Toggle -->
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <div class="btn-group" role="group">
-                                        <input type="radio" class="btn-check" name="viewType" id="viewCards"
-                                            value="cards" checked onchange="mudarView('cards')">
-                                        <label class="btn btn-outline-primary" for="viewCards">
-                                            <i class="fas fa-th-large me-2"></i>Cards
-                                        </label>
-
-                                        <input type="radio" class="btn-check" name="viewType" id="viewTable"
-                                            value="table" onchange="mudarView('table')">
-                                        <label class="btn btn-outline-primary" for="viewTable">
-                                            <i class="fas fa-list me-2"></i>Tabela
-                                        </label>
-                                    </div>
-
-                                    <div>
-                                        <span class="badge bg-light text-dark">
-                                            <i class="fas fa-info-circle me-2"></i><span id="totalResultados">
-                                                <%= producao.length %>
-                                            </span> resultado(s)
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Cards View -->
-                                <div id="cardsView" class="view-container">
-                                    <div class="row g-4" id="producaoCards">
-                                        <% if (producao.length> 0) { %>
-                                            <% producao.forEach(item=> { %>
-                                                <div class="col-md-6 col-lg-6">
-                                                    <div class="production-card producao-card h-100"
-                                                        data-status="<%= item.status.toLowerCase() %>"
-                                                        data-numero="<%= item.numero || '' %>"
-                                                        data-data="<%= item.data_fim_prevista || '' %>">
-
-                                                        <div class="card-header-custom">
-                                                            <div
-                                                                class="d-flex justify-content-between align-items-start">
-                                                                <div>
-                                                                    <h6 class="card-numero mb-1">
-                                                                        OP #<%= item.numero %>
-                                                                    </h6>
-                                                                    <p class="card-text-sm text-muted mb-0">
-                                                                        ID: <%= item.id %>
-                                                                    </p>
-                                                                </div>
-                                                                <span
-                                                                    class="badge status-badge <%= getStatusClass(item.status) %>">
-                                                                    <i
-                                                                        class="<%= getStatusIcon(item.status) %> me-1"></i>
-                                                                    <%= getStatusLabel(item.status) %>
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="card-body-custom">
-                                                            <div class="info-row">
-                                                                <i class="fas fa-user-circle text-muted"></i>
-                                                                <div>
-                                                                    <span class="info-label">Responsável:</span>
-                                                                    <span class="info-value">
-                                                                        <%= item.criado_por_nome || 'N/A' %>
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="info-row">
-                                                                <i class="fas fa-calendar-alt text-muted"></i>
-                                                                <div>
-                                                                    <span class="info-label">Data Prevista:</span>
-                                                                    <span class="info-value">
-                                                                        <%= formatDate(item.data_fim_prevista) %>
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="info-row">
-                                                                <i class="fas fa-clock text-muted"></i>
-                                                                <div>
-                                                                    <span class="info-label">Criado em:</span>
-                                                                    <span class="info-value">
-                                                                        <%= formatDate(item.created_at) %>
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            <% if (item.observacoes) { %>
-                                                                <div class="info-row">
-                                                                    <i class="fas fa-sticky-note text-muted"></i>
-                                                                    <div>
-                                                                        <span class="info-label">Observações:</span>
-                                                                        <span class="info-value">
-                                                                            <%= item.observacoes.substring(0, 50) %>...
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                                <% } %>
-                                                        </div>
-
-                                                        <div class="card-footer-custom">
-                                                            <div class="d-grid gap-2 d-sm-flex">
-                                                                <button class="btn btn-sm btn-primary"
-                                                                    onclick="verDetalhes(<%= item.id %>)"
-                                                                    title="Ver detalhes">
-                                                                    <i class="fas fa-eye me-1"></i>Detalhes
-                                                                </button>
-                                                                <button class="btn btn-sm btn-outline-secondary"
-                                                                    onclick="editarProducao(<%= item.id %>)"
-                                                                    title="Editar">
-                                                                    <i class="fas fa-edit me-1"></i>Editar
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <% }); %>
-                                                    <% } else { %>
-                                                        <div class="col-12">
-                                                            <div class="empty-state">
-                                                                <i class="fas fa-inbox"></i>
-                                                                <h4>Nenhuma ordem de produção encontrada</h4>
-                                                                <p class="text-muted">Comece criando uma nova ordem de
-                                                                    produção</p>
-                                                            </div>
-                                                        </div>
-                                                        <% } %>
-                                    </div>
-                                </div>
-
-                                <!-- Table View -->
-                                <div id="tableView" class="view-container d-none">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover table-production">
-                                            <thead>
-                                                <tr>
-                                                    <th>Número</th>
-                                                    <th>Status</th>
-                                                    <th>Data Prevista</th>
-                                                    <th>Responsável</th>
-                                                    <th>Criado em</th>
-                                                    <th>Ações</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="producaoTableBody">
-                                                <% if (producao.length> 0) { %>
-                                                    <% producao.forEach(item=> { %>
-                                                        <tr class="producao-row"
-                                                            data-status="<%= item.status.toLowerCase() %>"
-                                                            data-numero="<%= item.numero || '' %>">
-                                                            <td>
-                                                                <strong>OP #<%= item.numero %></strong>
-                                                                <br>
-                                                                <small class="text-muted">ID: <%= item.id %></small>
-                                                            </td>
-                                                            <td>
-                                                                <span
-                                                                    class="badge status-badge <%= getStatusClass(item.status) %>">
-                                                                    <%= getStatusLabel(item.status) %>
-                                                                </span>
-                                                            </td>
-                                                            <td>
-                                                                <%= formatDate(item.data_fim_prevista) %>
-                                                            </td>
-                                                            <td>
-                                                                <%= item.criado_por_nome || 'N/A' %>
-                                                            </td>
-                                                            <td><small>
-                                                                    <%= formatDate(item.created_at) %>
-                                                                </small></td>
-                                                            <td>
-                                                                <div class="btn-group btn-group-sm" role="group">
-                                                                    <button type="button"
-                                                                        class="btn btn-outline-primary"
-                                                                        onclick="verDetalhes(<%= item.id %>)"
-                                                                        title="Ver detalhes">
-                                                                        <i class="fas fa-eye"></i>
-                                                                    </button>
-                                                                    <button type="button"
-                                                                        class="btn btn-outline-secondary"
-                                                                        onclick="editarProducao(<%= item.id %>)"
-                                                                        title="Editar">
-                                                                        <i class="fas fa-edit"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        <% }); %>
-                                                            <% } %>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="card-body-custom">
+                      <div class="info-row">
+                        <i class="fas fa-user-circle text-muted"></i>
+                        <div>
+                          <span class="info-label">Responsável:</span>
+                          <span class="info-value">
+                            <%= item.criado_por_nome || 'N/A' %>
+                          </span>
                         </div>
+                      </div>
+
+                      <div class="info-row">
+                        <i class="fas fa-calendar-alt text-muted"></i>
+                        <div>
+                          <span class="info-label">Data Prevista:</span>
+                          <span class="info-value">
+                            <%= formatDate(item.data_fim_prevista) %>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="info-row">
+                        <i class="fas fa-clock text-muted"></i>
+                        <div>
+                          <span class="info-label">Criado em:</span>
+                          <span class="info-value">
+                            <%= formatDate(item.created_at) %>
+                          </span>
+                        </div>
+                      </div>
+
+                      <% if (item.observacoes) { %>
+                      <div class="info-row">
+                        <i class="fas fa-sticky-note text-muted"></i>
+                        <div>
+                          <span class="info-label">Observações:</span>
+                          <span class="info-value">
+                            <%= item.observacoes.substring(0, 50) %>...
+                          </span>
+                        </div>
+                      </div>
+                      <% } %>
+                    </div>
+
+                    <div class="card-footer-custom">
+                      <div class="d-grid gap-2 d-sm-flex">
+                        <button
+                          class="btn btn-sm btn-primary"
+                          onclick="verDetalhes(<%= item.id %>)"
+                          title="Ver detalhes"
+                        >
+                          <i class="fas fa-eye me-1"></i>Detalhes
+                        </button>
+                        <button
+                          class="btn btn-sm btn-outline-secondary"
+                          onclick="editarProducao(<%= item.id %>)"
+                          title="Editar"
+                        >
+                          <i class="fas fa-edit me-1"></i>Editar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <% }); %> <% } else { %>
+                <div class="col-12">
+                  <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>Nenhuma ordem de produção encontrada</h4>
+                    <p class="text-muted">
+                      Comece criando uma nova ordem de produção
+                    </p>
+                  </div>
+                </div>
+                <% } %>
+              </div>
             </div>
 
-        </main>
+            <!-- Table View -->
+            <div id="tableView" class="view-container d-none">
+              <div class="table-responsive">
+                <table class="table table-hover table-production">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Status</th>
+                      <th>Data Prevista</th>
+                      <th>Responsável</th>
+                      <th>Criado em</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="producaoTableBody">
+                    <% if (producao.length> 0) { %> <% producao.forEach(item=> {
+                    %>
+                    <tr
+                      class="producao-row"
+                      data-status="<%= item.status.toLowerCase() %>"
+                      data-numero="<%= item.numero || '' %>"
+                    >
+                      <td>
+                        <strong>OP #<%= item.numero %></strong>
+                        <br />
+                        <small class="text-muted">ID: <%= item.id %></small>
+                      </td>
+                      <td>
+                        <span
+                          class="badge status-badge <%= getStatusClass(item.status) %>"
+                        >
+                          <%= getStatusLabel(item.status) %>
+                        </span>
+                      </td>
+                      <td><%= formatDate(item.data_fim_prevista) %></td>
+                      <td><%= item.criado_por_nome || 'N/A' %></td>
+                      <td>
+                        <small> <%= formatDate(item.created_at) %> </small>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                          <button
+                            type="button"
+                            class="btn btn-outline-primary"
+                            onclick="verDetalhes(<%= item.id %>)"
+                            title="Ver detalhes"
+                          >
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="editarProducao(<%= item.id %>)"
+                            title="Editar"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <% }); %> <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
 
-        <%- include('partials/footer') %>
+    <%- include('partials/footer') %>
 
-            <!-- Bootstrap JS -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="/js/main.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
 
-            <script>
-                // Helper Functions
-                function getStatusClass(status) {
-                    const statusMap = {
-                        'aberta': 'bg-warning text-dark',
-                        'em_andamento': 'bg-info text-white',
-                        'andamento': 'bg-info text-white',
-                        'pausada': 'bg-secondary text-white',
-                        'concluida': 'bg-success text-white',
-                        'concluido': 'bg-success text-white',
-                        'cancelada': 'bg-danger text-white'
-                    };
-                    return statusMap[status.toLowerCase()] || 'bg-secondary text-white';
-                }
+    <script>
+      // Helper Functions
+      function getStatusClass(status) {
+        const statusMap = {
+          aberta: "bg-warning text-dark",
+          em_andamento: "bg-info text-dark",
+          andamento: "bg-info text-dark",
+          pausada: "bg-secondary text-white",
+          concluida: "bg-success text-white",
+          concluido: "bg-success text-white",
+          cancelada: "bg-danger text-white",
+        };
+        return statusMap[status.toLowerCase()] || "bg-secondary text-white";
+      }
 
-                function getStatusIcon(status) {
-                    const iconMap = {
-                        'aberta': 'fas fa-hourglass-start',
-                        'em_andamento': 'fas fa-cogs',
-                        'andamento': 'fas fa-cogs',
-                        'pausada': 'fas fa-pause-circle',
-                        'concluida': 'fas fa-check-circle',
-                        'concluido': 'fas fa-check-circle',
-                        'cancelada': 'fas fa-times-circle'
-                    };
-                    return iconMap[status.toLowerCase()] || 'fas fa-question-circle';
-                }
+      function getStatusIcon(status) {
+        const iconMap = {
+          aberta: "fas fa-hourglass-start",
+          em_andamento: "fas fa-cogs",
+          andamento: "fas fa-cogs",
+          pausada: "fas fa-pause-circle",
+          concluida: "fas fa-check-circle",
+          concluido: "fas fa-check-circle",
+          cancelada: "fas fa-times-circle",
+        };
+        return iconMap[status.toLowerCase()] || "fas fa-question-circle";
+      }
 
-                function getStatusLabel(status) {
-                    const labelMap = {
-                        'aberta': 'Na Fila',
-                        'em_andamento': 'Em Andamento',
-                        'andamento': 'Em Andamento',
-                        'pausada': 'Pausada',
-                        'concluida': 'Concluída',
-                        'concluido': 'Concluída',
-                        'cancelada': 'Cancelada'
-                    };
-                    return labelMap[status.toLowerCase()] || status;
-                }
+      function getStatusLabel(status) {
+        const labelMap = {
+          aberta: "Na Fila",
+          em_andamento: "Em Andamento",
+          andamento: "Em Andamento",
+          pausada: "Pausada",
+          concluida: "Concluída",
+          concluido: "Concluída",
+          cancelada: "Cancelada",
+        };
+        return labelMap[status.toLowerCase()] || status;
+      }
 
-                function formatDate(dateString) {
-                    if (!dateString) return 'N/A';
-                    const date = new Date(dateString);
-                    return date.toLocaleDateString('pt-BR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                    });
-                }
+      function formatDate(dateString) {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        return date.toLocaleDateString("pt-BR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+      }
 
-                // Filter Function
-                function filtrarProducao() {
-                    const filtroCodigo = document.getElementById('filtroCodigo').value.toLowerCase();
-                    const filtroData = document.getElementById('filtroData').value;
-                    const filtroFila = document.getElementById('filtroFila').checked;
-                    const filtroAndamento = document.getElementById('filtroAndamento').checked;
-                    const filtroConcluido = document.getElementById('filtroConcluido').checked;
-                    const filtroPausada = document.getElementById('filtroPausada').checked;
-                    const filtroCancelada = document.getElementById('filtroCancelada').checked;
+      // Filter Function
+      function filtrarProducao() {
+        const filtroCodigo = document
+          .getElementById("filtroCodigo")
+          .value.toLowerCase();
+        const filtroData = document.getElementById("filtroData").value;
+        const filtroFila = document.getElementById("filtroFila").checked;
+        const filtroAndamento =
+          document.getElementById("filtroAndamento").checked;
+        const filtroConcluido =
+          document.getElementById("filtroConcluido").checked;
+        const filtroPausada = document.getElementById("filtroPausada").checked;
+        const filtroCancelada =
+          document.getElementById("filtroCancelada").checked;
 
-                    const cards = document.querySelectorAll('.producao-card');
-                    const rows = document.querySelectorAll('.producao-row');
-                    let totalVisivel = 0;
+        const cards = document.querySelectorAll(".producao-card");
+        const rows = document.querySelectorAll(".producao-row");
+        let totalVisivel = 0;
 
-                    // Filtrar cards
-                    cards.forEach(card => {
-                        const numero = card.dataset.numero.toLowerCase();
-                        const data = card.dataset.data;
-                        const status = card.dataset.status;
+        // Filtrar cards
+        cards.forEach((card) => {
+          const numero = card.dataset.numero.toLowerCase();
+          const data = card.dataset.data;
+          const status = card.dataset.status;
 
-                        let mostrar = true;
+          let mostrar = true;
 
-                        if (filtroCodigo && !numero.includes(filtroCodigo)) {
-                            mostrar = false;
-                        }
+          if (filtroCodigo && !numero.includes(filtroCodigo)) {
+            mostrar = false;
+          }
 
-                        if (filtroData && data !== filtroData) {
-                            mostrar = false;
-                        }
+          if (filtroData && data !== filtroData) {
+            mostrar = false;
+          }
 
-                        if ((filtroFila || filtroAndamento || filtroConcluido || filtroPausada || filtroCancelada)) {
-                            const statusSelecionado =
-                                (filtroFila && (status === 'aberta' || status === 'fila')) ||
-                                (filtroAndamento && (status === 'em_andamento' || status === 'andamento')) ||
-                                (filtroConcluido && (status === 'concluida' || status === 'concluido')) ||
-                                (filtroPausada && status === 'pausada') ||
-                                (filtroCancelada && status === 'cancelada');
+          if (
+            filtroFila ||
+            filtroAndamento ||
+            filtroConcluido ||
+            filtroPausada ||
+            filtroCancelada
+          ) {
+            const statusSelecionado =
+              (filtroFila && (status === "aberta" || status === "fila")) ||
+              (filtroAndamento &&
+                (status === "em_andamento" || status === "andamento")) ||
+              (filtroConcluido &&
+                (status === "concluida" || status === "concluido")) ||
+              (filtroPausada && status === "pausada") ||
+              (filtroCancelada && status === "cancelada");
 
-                            if (!statusSelecionado) {
-                                mostrar = false;
-                            }
-                        }
+            if (!statusSelecionado) {
+              mostrar = false;
+            }
+          }
 
-                        const container = card.closest('.col-md-6') || card.closest('.col-lg-6');
-                        if (container) {
-                            container.style.display = mostrar ? 'block' : 'none';
-                            if (mostrar) totalVisivel++;
-                        }
-                    });
+          const container =
+            card.closest(".col-md-6") || card.closest(".col-lg-6");
+          if (container) {
+            container.style.display = mostrar ? "block" : "none";
+            if (mostrar) totalVisivel++;
+          }
+        });
 
-                    // Filtrar tabela
-                    rows.forEach(row => {
-                        const numero = row.dataset.numero.toLowerCase();
-                        const status = row.dataset.status;
+        // Filtrar tabela
+        rows.forEach((row) => {
+          const numero = row.dataset.numero.toLowerCase();
+          const status = row.dataset.status;
 
-                        let mostrar = true;
+          let mostrar = true;
 
-                        if (filtroCodigo && !numero.includes(filtroCodigo)) {
-                            mostrar = false;
-                        }
+          if (filtroCodigo && !numero.includes(filtroCodigo)) {
+            mostrar = false;
+          }
 
-                        if (filtroData && row.dataset.data !== filtroData) {
-                            mostrar = false;
-                        }
+          if (filtroData && row.dataset.data !== filtroData) {
+            mostrar = false;
+          }
 
-                        if ((filtroFila || filtroAndamento || filtroConcluido || filtroPausada || filtroCancelada)) {
-                            const statusSelecionado =
-                                (filtroFila && (status === 'aberta' || status === 'fila')) ||
-                                (filtroAndamento && (status === 'em_andamento' || status === 'andamento')) ||
-                                (filtroConcluido && (status === 'concluida' || status === 'concluido')) ||
-                                (filtroPausada && status === 'pausada') ||
-                                (filtroCancelada && status === 'cancelada');
+          if (
+            filtroFila ||
+            filtroAndamento ||
+            filtroConcluido ||
+            filtroPausada ||
+            filtroCancelada
+          ) {
+            const statusSelecionado =
+              (filtroFila && (status === "aberta" || status === "fila")) ||
+              (filtroAndamento &&
+                (status === "em_andamento" || status === "andamento")) ||
+              (filtroConcluido &&
+                (status === "concluida" || status === "concluido")) ||
+              (filtroPausada && status === "pausada") ||
+              (filtroCancelada && status === "cancelada");
 
-                            if (!statusSelecionado) {
-                                mostrar = false;
-                            }
-                        }
+            if (!statusSelecionado) {
+              mostrar = false;
+            }
+          }
 
-                        row.style.display = mostrar ? 'table-row' : 'none';
-                    });
+          row.style.display = mostrar ? "table-row" : "none";
+        });
 
-                    document.getElementById('totalResultados').textContent = totalVisivel;
-                }
+        document.getElementById("totalResultados").textContent = totalVisivel;
+      }
 
-                // Clear Filters
-                function limparFiltros() {
-                    document.getElementById('filtroCodigo').value = '';
-                    document.getElementById('filtroData').value = '';
-                    document.getElementById('filtroFila').checked = false;
-                    document.getElementById('filtroAndamento').checked = false;
-                    document.getElementById('filtroConcluido').checked = false;
-                    document.getElementById('filtroPausada').checked = false;
-                    document.getElementById('filtroCancelada').checked = false;
+      // Clear Filters
+      function limparFiltros() {
+        document.getElementById("filtroCodigo").value = "";
+        document.getElementById("filtroData").value = "";
+        document.getElementById("filtroFila").checked = false;
+        document.getElementById("filtroAndamento").checked = false;
+        document.getElementById("filtroConcluido").checked = false;
+        document.getElementById("filtroPausada").checked = false;
+        document.getElementById("filtroCancelada").checked = false;
 
-                    document.querySelectorAll('.producao-card').forEach(card => {
-                        const container = card.closest('.col-md-6') || card.closest('.col-lg-6');
-                        if (container) container.style.display = 'block';
-                    });
+        document.querySelectorAll(".producao-card").forEach((card) => {
+          const container =
+            card.closest(".col-md-6") || card.closest(".col-lg-6");
+          if (container) container.style.display = "block";
+        });
 
-                    document.querySelectorAll('.producao-row').forEach(row => {
-                        row.style.display = 'table-row';
-                    });
+        document.querySelectorAll(".producao-row").forEach((row) => {
+          row.style.display = "table-row";
+        });
 
-                    document.getElementById('totalResultados').textContent = document.querySelectorAll('.producao-card').length;
-                }
+        document.getElementById("totalResultados").textContent =
+          document.querySelectorAll(".producao-card").length;
+      }
 
-                // View Toggle
-                function mudarView(view) {
-                    const cardsView = document.getElementById('cardsView');
-                    const tableView = document.getElementById('tableView');
+      // View Toggle
+      function mudarView(view) {
+        const cardsView = document.getElementById("cardsView");
+        const tableView = document.getElementById("tableView");
 
-                    if (view === 'cards') {
-                        cardsView.classList.remove('d-none');
-                        tableView.classList.add('d-none');
-                    } else {
-                        cardsView.classList.add('d-none');
-                        tableView.classList.remove('d-none');
-                    }
-                }
+        if (view === "cards") {
+          cardsView.classList.remove("d-none");
+          tableView.classList.add("d-none");
+        } else {
+          cardsView.classList.add("d-none");
+          tableView.classList.remove("d-none");
+        }
+      }
 
-                // Details Function
-                function verDetalhes(id) {
-                    console.log(`Visualizando detalhes de ${id}`);
-                    // Implementar modal ou redirecionamento
-                    alert(`Detalhes da ordem #${id}`);
-                }
+      // Details Function
+      function verDetalhes(id) {
+        console.log(`Visualizando detalhes de ${id}`);
+        // Implementar modal ou redirecionamento
+        alert(`Detalhes da ordem #${id}`);
+      }
 
-                // Edit Function
-                function editarProducao(id) {
-                    console.log(`Editando produção ${id}`);
-                    alert(`Editar ordem #${id}`);
-                }
-            </script>
-</body>
-
+      // Edit Function
+      function editarProducao(id) {
+        console.log(`Editando produção ${id}`);
+        alert(`Editar ordem #${id}`);
+      }
+    </script>
+  </body>
 </html>

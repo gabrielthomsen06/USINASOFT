@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title || 'UsinaSoft' %></title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- FontAwesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- UsinaSoft Custom CSS -->
+    <link rel="stylesheet" href="/css/usinasoft-bootstrap.css" />
+  </head>
+  <body>
+    <%- include('partials/header', { user: user, showNav: true, currentPage:
+    'clientes' }) %>
+
+    <main class="main-content">
+      <div class="container py-5">
+        <!-- Page Header -->
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold text-usinasoft-primary mb-3">
+            <i class="fas fa-users me-3"></i>Cadastro de Clientes
+          </h1>
+          <p class="lead text-muted">Gerencie os clientes da sua empresa</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="row justify-content-center mb-5">
+          <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+              <div
+                class="card-header bg-gradient text-white text-center py-4"
+                style="
+                  background: linear-gradient(135deg, #ff8c1f 0%, #ff6b35 100%);
+                "
+              >
+                <h2 class="card-title h4 mb-0">Novo Cliente</h2>
+              </div>
+
+              <div class="card-body p-4">
+                <!-- Success Message -->
+                <% if (typeof success !== 'undefined' && success) { %>
+                <div
+                  class="alert alert-success alert-dismissible fade show"
+                  role="alert"
+                >
+                  <i class="fas fa-check-circle me-2"></i>
+                  Cliente cadastrado com sucesso!
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                  ></button>
+                </div>
+                <% } %>
+
+                <!-- Error Message -->
+                <% if (typeof error !== 'undefined' && error) { %>
+                <div
+                  class="alert alert-danger alert-dismissible fade show"
+                  role="alert"
+                >
+                  <i class="fas fa-exclamation-circle me-2"></i>
+                  <%= error %>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                  ></button>
+                </div>
+                <% } %>
+
+                <!-- Form -->
+                <form method="POST" action="/clientes" id="formCliente">
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                      <label for="nome" class="form-label"
+                        >Nome do Cliente
+                        <span class="text-danger">*</span></label
+                      >
+                      <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        class="form-control"
+                        placeholder="Nome completo ou razão social"
+                        required
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="cnpj" class="form-label">CNPJ/CPF</label>
+                      <input
+                        type="text"
+                        id="cnpj"
+                        name="cnpj"
+                        class="form-control"
+                        placeholder="00.000.000/0000-00"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                      <label for="email" class="form-label">E-mail</label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        placeholder="email@exemplo.com"
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="telefone" class="form-label">Telefone</label>
+                      <input
+                        type="tel"
+                        id="telefone"
+                        name="telefone"
+                        class="form-control"
+                        placeholder="(00) 00000-0000"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label for="endereco" class="form-label">Endereço</label>
+                    <textarea
+                      id="endereco"
+                      name="endereco"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Endereço completo do cliente"
+                    ></textarea>
+                  </div>
+
+                  <div class="d-flex gap-3 justify-content-end">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      onclick="history.back()"
+                    >
+                      <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-save me-2"></i>Cadastrar Cliente
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Clientes -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-light">
+                <h3 class="card-title h5 mb-0">
+                  <i class="fas fa-list me-2"></i>Clientes Cadastrados
+                </h3>
+              </div>
+              <div class="card-body">
+                <% if (clientes && clientes.length > 0) { %>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Nome</th>
+                        <th>CNPJ/CPF</th>
+                        <th>E-mail</th>
+                        <th>Telefone</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% clientes.forEach(cliente => { %>
+                      <tr>
+                        <td><strong><%= cliente.nome %></strong></td>
+                        <td><%= cliente.cnpj || '-' %></td>
+                        <td><%= cliente.email || '-' %></td>
+                        <td><%= cliente.telefone || '-' %></td>
+                        <td>
+                          <button
+                            class="btn btn-sm btn-outline-primary"
+                            title="Editar"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button
+                            class="btn btn-sm btn-outline-danger"
+                            title="Excluir"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+                <% } else { %>
+                <div class="text-center py-5">
+                  <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                  <p class="text-muted">Nenhum cliente cadastrado ainda.</p>
+                </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <%- include('partials/footer') %>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

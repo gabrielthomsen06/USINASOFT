@@ -105,6 +105,7 @@
 }
 
 .stat-card-body {
+  color: #555;
   position: relative;
   z-index: 1;
   width: 100%;
@@ -128,7 +129,6 @@
 
 .stat-icon {
   font-size: 3rem;
-  opacity: 0.15;
 }
 
 /* Filter Card */

@@ -39,6 +39,14 @@
   color: var(--usinasoft-primary) !important;
   font-weight: 700;
   font-size: 1.5rem;
+  padding: 0.25rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.logo-brand:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
 }
 
 .navbar-nav .nav-link.active {
@@ -121,8 +129,30 @@
 
 /* Layout principal */
 .main-content {
+  display: flex;
+  flex-direction: column;
   min-height: calc(100vh - 200px);
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  flex-shrink: 0;
+}
+
+main {
+  flex: 1;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+footer {
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 /* Layout de login */

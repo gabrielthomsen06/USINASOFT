@@ -2,7 +2,7 @@
 
 Sistema ERP desenvolvido para gestão de produção em usinagem, com cadastro de peças, controle de produção e indicadores.
 
-## 🚀 Características
+## Características
 
 - **Sistema de Login** com autenticação JWT
 - **Menu Principal** com navegação intuitiva
@@ -13,7 +13,7 @@ Sistema ERP desenvolvido para gestão de produção em usinagem, com cadastro de
 - **Design Responsivo** para desktop e mobile
 - **Componentes Reutilizáveis** para escalabilidade
 
-## 🎨 Design System
+## Design System
 
 O sistema utiliza um design system consistente com as cores principais:
 
@@ -63,7 +63,7 @@ UsinaSoft/
 └── package.json           # Dependências do projeto
 ```
 
-## 🚀 Instalação e Execução
+## Instalação e Execução
 
 ### Pré-requisitos
 
@@ -140,35 +140,35 @@ Para acessar o sistema, use qualquer email e senha (sistema de autenticação si
 
 ### Estrutura e Organização
 
-- ✅ Separação clara entre views, partials e componentes
-- ✅ Estrutura de pastas organizada e escalável
-- ✅ Componentes reutilizáveis (botões, cards, formulários)
-- ✅ Sistema de layout consistente
+- Separação clara entre views, partials e componentes
+- Estrutura de pastas organizada e escalável
+- Componentes reutilizáveis (botões, cards, formulários)
+- Sistema de layout consistente
 
 ### Design e UX
 
-- ✅ Design system com variáveis CSS
-- ✅ Cores padronizadas do projeto
-- ✅ Componentes responsivos
-- ✅ Navegação consistente
-- ✅ Feedback visual para ações
+- Design system com variáveis CSS
+- Cores padronizadas do projeto
+- Componentes responsivos
+- Navegação consistente
+- Feedback visual para ações
 
 ### Código e Boas Práticas
 
-- ✅ JavaScript modular e organizado
-- ✅ Validação de formulários
-- ✅ Sistema de notificações
-- ✅ Gerenciamento de estado
-- ✅ Eventos customizados
+- JavaScript modular e organizado
+- Validação de formulários
+- Sistema de notificações
+- Gerenciamento de estado
+- Eventos customizados
 
 ### Escalabilidade
 
-- ✅ Estrutura preparada para banco de dados
-- ✅ API endpoints organizados
-- ✅ Componentes reutilizáveis
-- ✅ Sistema de autenticação extensível
+- Estrutura preparada para banco de dados
+- API endpoints organizados
+- Componentes reutilizáveis
+- Sistema de autenticação extensível
 
-## 🔮 Próximos Passos
+## Próximos Passos
 
 Para expandir o sistema, considere implementar:
 
@@ -197,11 +197,11 @@ Para expandir o sistema, considere implementar:
    - Atalhos de teclado
    - Busca global
 
-## 📄 Licença
+## Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
 
-## 👥 Contribuição
+## Contribuição
 
 Contribuições são bem-vindas! Por favor, abra uma issue ou pull request para sugerir melhorias.
 

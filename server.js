@@ -98,8 +98,8 @@ const addAuthToken = (req, res, next) => {
 app.get("/login", (req, res) => {
   res.render("login", {
     title: "Login - UsinaSoft",
-    error: req.query.error || null,
-    success: req.query.success || null,
+    error: null,
+    success: null,
   });
 });
 
@@ -170,6 +170,7 @@ app.post("/login", async (req, res) => {
     res.render("login", {
       title: "Login - UsinaSoft",
       error: errorMessage,
+      success: null,
     });
   }
 });
@@ -823,8 +824,7 @@ app.get("/ops/:id/detalhes", async (req, res) => {
 
     console.log("OP encontrada:", op.id, op.codigo);
 
-    // Buscar peças da OP - usar o ID da OP
-    const pecasResponse = await api.get(`/pecas/?ordem_producao=${op.id}`);
+    z;
     console.log("URL de busca de peças:", `/pecas/?ordem_producao=${op.id}`);
     console.log("Resposta de peças:", pecasResponse.data);
 

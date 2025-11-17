@@ -289,7 +289,10 @@
                         <div>
                           <span class="info-label">Responsável:</span>
                           <span class="info-value">
-                            <%= item.criado_por_nome || 'N/A' %>
+                            <% if (item.responsavel && item.responsavel_nome) {
+                            %> <%= item.responsavel_nome %> <% } else { %>
+                            <span class="text-warning">Não atribuído</span>
+                            <% } %>
                           </span>
                         </div>
                       </div>
@@ -405,7 +408,12 @@
                         </span>
                       </td>
                       <td><%= formatDate(item.data_entrega) %></td>
-                      <td><%= item.criado_por_nome || 'N/A' %></td>
+                      <td>
+                        <% if (item.responsavel && item.responsavel_nome) { %>
+                        <%= item.responsavel_nome %> <% } else { %>
+                        <span class="text-warning">Não atribuído</span>
+                        <% } %>
+                      </td>
                       <td>
                         <small> <%= formatDate(item.created_at) %> </small>
                       </td>
@@ -755,7 +763,7 @@
 
       // Details Function
       function verDetalhes(id) {
-        window.location.href = `/ops/${id}/detalhes`;
+        window.location.href = `/op-detalhes?id=${id}`;
       }
 
       // Edit Function

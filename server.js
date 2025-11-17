@@ -54,6 +54,11 @@ app.use(
 // Servir Bootstrap do node_modules
 app.use("/node_modules/bootstrap", express.static("node_modules/bootstrap"));
 
+// Favicon
+app.get("/favicon.ico", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/img/favicon.png"));
+});
+
 // Configuração de sessão
 app.use(
   session({
@@ -707,7 +712,6 @@ app.get("/producao", async (req, res) => {
         }
       });
 
-      // Enrich production data with user names
       producao = producao.map((op) => ({
         ...op,
         criado_por_nome: usuariosMap[op.criado_por] || "N/A",
@@ -753,19 +757,29 @@ app.get("/producao", async (req, res) => {
     });
   }
 });
-
 // Rota para visualizar detalhes de uma OP (página HTML)
-app.get("/ops/:id/detalhes", async (req, res) => {
-  const { id } = req.params;
+app.get("/op-detalhes", async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.redirect("/producao");
+  }
 
   try {
     // Buscar dados da OP
     const opResponse = await api.get(`/ops/${id}/`);
     const op = opResponse.data;
 
-    const pecas = Array.isArray(pecasResponse.data)
-      ? pecasResponse.data
-      : pecasResponse.data.results || [];
+    // Buscar peças da OP se existirem
+    let pecas = [];
+    try {
+      const pecasResponse = await api.get(`/pecas/?ordem_producao=${id}`);
+      pecas = Array.isArray(pecasResponse.data)
+        ? pecasResponse.data
+        : pecasResponse.data.results || [];
+    } catch (pecasError) {
+      // Continue mesmo se não conseguir buscar peças
+    }
 
     res.render("op-detalhes", {
       title: `OP ${op.codigo} - Detalhes - UsinaSoft`,
@@ -784,6 +798,8 @@ app.get("/ops/:id/detalhes", async (req, res) => {
       error: null,
     });
   } catch (error) {
+    console.error("Erro ao carregar OP:", error);
+
     // Se for erro de autenticação, redirecionar para login
     if (isAuthError(error)) {
       return handleAuthError(req, res);

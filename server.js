@@ -54,7 +54,6 @@ app.use(
 // Servir Bootstrap do node_modules
 app.use("/node_modules/bootstrap", express.static("node_modules/bootstrap"));
 
-// Favicon
 app.get("/favicon.ico", (req, res) => {
   res.sendFile(path.join(__dirname, "public/img/favicon.png"));
 });
@@ -147,8 +146,7 @@ app.post("/login", async (req, res) => {
     if (error.response && error.response.status === 401) {
       errorMessage = "Credenciais inválidas. Tente novamente.";
     } else if (error.code === "ECONNREFUSED") {
-      errorMessage =
-        "Não foi possível conectar ao servidor de autenticação. Verifique se a API está rodando.";
+      errorMessage = "Não foi possível conectar ao servidor.";
     } else if (error.message) {
       errorMessage = `Erro ao fazer login: ${error.message}`;
     }

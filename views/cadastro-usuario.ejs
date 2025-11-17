@@ -73,20 +73,36 @@
             <form method="POST" action="/cadastro-usuario" data-validate>
               <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                  <label for="nome" class="form-label"
-                    >Nome Completo <span class="text-danger">*</span></label
+                  <label for="first_name" class="form-label"
+                    >Nome <span class="text-danger">*</span></label
                   >
                   <input
                     type="text"
-                    id="nome"
-                    name="nome"
+                    id="first_name"
+                    name="first_name"
                     class="form-control"
-                    placeholder="Digite seu nome completo"
+                    placeholder="Digite seu nome"
                     required
                   />
                 </div>
 
                 <div class="col-md-6">
+                  <label for="last_name" class="form-label"
+                    >Sobrenome <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="last_name"
+                    name="last_name"
+                    class="form-control"
+                    placeholder="Digite seu sobrenome"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-12">
                   <label for="email" class="form-label"
                     >Email <span class="text-danger">*</span></label
                   >
@@ -103,13 +119,13 @@
 
               <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                  <label for="senha" class="form-label"
+                  <label for="password" class="form-label"
                     >Senha <span class="text-danger">*</span></label
                   >
                   <input
                     type="password"
-                    id="senha"
-                    name="senha"
+                    id="password"
+                    name="password"
                     class="form-control"
                     placeholder="Digite sua senha"
                     required
@@ -131,43 +147,6 @@
                     required
                   />
                 </div>
-              </div>
-
-              <div class="row g-3 mb-3">
-                <div class="col-md-6">
-                  <label for="telefone" class="form-label">Telefone</label>
-                  <input
-                    type="tel"
-                    id="telefone"
-                    name="telefone"
-                    class="form-control"
-                    placeholder="(11) 99999-9999"
-                  />
-                </div>
-
-                <div class="col-md-6">
-                  <label for="cargo" class="form-label"
-                    >Cargo <span class="text-danger">*</span></label
-                  >
-                  <select id="cargo" name="cargo" class="form-select" required>
-                    <option value="">Selecione seu cargo</option>
-                    <option value="operador">Operador</option>
-                    <option value="supervisor">Supervisor</option>
-                    <option value="gerente">Gerente</option>
-                    <option value="administrador">Administrador</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <label for="empresa" class="form-label">Empresa</label>
-                <input
-                  type="text"
-                  id="empresa"
-                  name="empresa"
-                  class="form-control"
-                  placeholder="Nome da empresa (opcional)"
-                />
               </div>
 
               <div class="mb-4">

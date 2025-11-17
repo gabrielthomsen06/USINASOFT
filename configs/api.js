@@ -1,7 +1,8 @@
 const axios = require("axios");
+const { API_BASE_URL } = require("../configs");
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api", // Django rodando localmente
+  baseURL: API_BASE_URL,
   timeout: 10000, // 10 segundos
 });
 
@@ -41,7 +42,7 @@ api.interceptors.response.use(
         // Se temos um refresh token na sessão, tentar renovar
         if (currentSession?.refreshToken) {
           const response = await axios.post(
-            "http://localhost:8000/api/auth/token/refresh/",
+            `${API_BASE_URL}/auth/token/refresh/`,
             {
               refresh: currentSession.refreshToken,
             }
@@ -63,8 +64,6 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         // Se o refresh falhar, a sessão expirou completamente
-        console.error("Erro ao renovar token:", refreshError);
-
         // Limpar a sessão
         if (currentSession) {
           currentSession.token = null;

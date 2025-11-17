@@ -63,7 +63,7 @@
         <% if (typeof user !== 'undefined' && user) { %>
         <li class="nav-item ms-auto d-flex align-items-center">
           <span class="text-white me-3 d-none d-lg-inline"
-            >Olá, <%= user.email %></span
+            >Olá, <%= user.full_name %></span
           >
           <a href="/logout" class="btn btn-outline-light btn-sm">Sair</a>
         </li>
@@ -76,3 +76,9 @@
 <link rel="stylesheet" href="/css/producao.css" />
 <link rel="stylesheet" href="/css/indicadores.css" />
 <title><%= title %></title>
+
+<script>
+  // Log do usuário logado
+  const usuarioLogado = <%- JSON.stringify(user || null) %>;
+  console.log('Usuário Logado:', usuarioLogado);
+</script>

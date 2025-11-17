@@ -17,7 +17,6 @@ const {
 
 const apiBaseUrl = API_BASE_URL + "/";
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Configuração do EJS
 app.set("view engine", "ejs");
@@ -58,7 +57,8 @@ app.use("/node_modules/bootstrap", express.static("node_modules/bootstrap"));
 // Configuração de sessão
 app.use(
   session({
-    secret: "usinasoft-secret-key",
+    name: "usinasoft.sid",
+    secret: "usinasoft_secret_key_default_2025",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -107,56 +107,37 @@ app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    console.log("Tentando login com:", email);
-    console.log("URL da API:", `${apiBaseUrl}auth/token/`);
-
     const response = await axios.post(`${apiBaseUrl}auth/token/`, {
       email,
       password,
     });
 
-    console.log("Login bem-sucedido!");
     const { access, refresh, user } = response.data;
 
     // Armazenar tokens e informações do usuário na sessão
     req.session.token = access;
     req.session.refreshToken = refresh;
 
-    // Armazenar dados completos do usuário (se retornados pela API)
-    // Caso contrário, buscar os dados do usuário
-    if (user) {
-      req.session.user = user;
-    } else {
-      // Buscar dados do usuário logado
-      try {
-        api.defaults.headers.common["Authorization"] = `Bearer ${access}`;
-        const userResponse = await api.get("/auth/me/");
-        req.session.user = {
-          id: userResponse.data.id,
-          email: userResponse.data.email,
-          first_name: userResponse.data.first_name,
-          last_name: userResponse.data.last_name,
-        };
-      } catch (userError) {
-        console.warn(
-          "Não foi possível buscar dados do usuário:",
-          userError.message
-        );
-        req.session.user = { email };
-      }
-    }
-
     // Configurar o token para chamadas futuras da API nesta sessão
     api.defaults.headers.common["Authorization"] = `Bearer ${access}`;
 
+    try {
+      const userResponse = await api.get("/auth/me/");
+      const userData = userResponse.data;
+
+      req.session.user = {
+        email: userData.email,
+        id: userData.id,
+        full_name: userData.full_name,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        is_staff: userData.is_staff,
+        is_superuser: userData.is_superuser,
+      };
+    } catch (userError) {}
+
     res.redirect("/menu");
   } catch (error) {
-    console.error("Erro no login:", error.message);
-    if (error.response) {
-      console.error("Status:", error.response.status);
-      console.error("Dados:", error.response.data);
-    }
-
     let errorMessage = "Erro ao fazer login. Verifique suas credenciais.";
     if (error.response && error.response.status === 401) {
       errorMessage = "Credenciais inválidas. Tente novamente.";
@@ -180,9 +161,6 @@ app.get("/logout", (req, res) => {
   delete api.defaults.headers.common["Authorization"];
 
   req.session.destroy((err) => {
-    if (err) {
-      console.error("Erro ao destruir sessão:", err);
-    }
     res.redirect("/login");
   });
 });
@@ -197,18 +175,9 @@ app.get("/cadastro-usuario", (req, res) => {
 });
 
 app.post("/cadastro-usuario", async (req, res) => {
-  const {
-    nome,
-    sobrenome,
-    email,
-    senha,
-    confirmarSenha,
-    telefone,
-    cargo,
-    empresa,
-  } = req.body;
+  const { first_name, last_name, email, password, confirmarSenha } = req.body;
 
-  if (senha !== confirmarSenha) {
+  if (password !== confirmarSenha) {
     return res.render("cadastro-usuario", {
       title: "Cadastro de Usuário - UsinaSoft",
       error: "As senhas não coincidem",
@@ -217,11 +186,10 @@ app.post("/cadastro-usuario", async (req, res) => {
 
   try {
     await axios.post(`${apiBaseUrl}usuarios/`, {
-      first_name: nome,
-      last_name: sobrenome,
+      first_name,
+      last_name,
       email,
-      password: senha,
-      // Outros campos podem ser necessários dependendo da sua API
+      password,
     });
 
     res.redirect(
@@ -300,8 +268,6 @@ app.get("/clientes", async (req, res) => {
       error: null,
     });
   } catch (error) {
-    console.error("Erro ao buscar clientes:", error.message);
-
     // Se for erro de autenticação, redirecionar para login
     if (isAuthError(error)) {
       return handleAuthError(req, res);
@@ -337,9 +303,6 @@ app.post("/clientes", async (req, res) => {
       endereco: endereco || "",
     });
 
-    console.log("Cliente cadastrado com sucesso:", clienteResponse.data);
-
-    // Se a requisição for AJAX, retornar JSON
     if (req.headers.accept && req.headers.accept.includes("application/json")) {
       return res.json({
         success: true,
@@ -350,8 +313,6 @@ app.post("/clientes", async (req, res) => {
 
     res.redirect("/clientes?success=true");
   } catch (error) {
-    console.error("Erro ao cadastrar cliente:", error);
-
     let errorMessage = "Erro ao cadastrar o cliente. Tente novamente.";
 
     if (error.response) {
@@ -437,7 +398,6 @@ app.put("/clientes/:id", async (req, res) => {
       message: "Cliente atualizado com sucesso!",
     });
   } catch (error) {
-    console.error("Erro ao atualizar cliente:", error);
     let errorMessage = "Erro ao atualizar o cliente.";
 
     if (error.response?.data) {
@@ -465,7 +425,6 @@ app.delete("/clientes/:id", async (req, res) => {
       message: "Cliente excluído com sucesso!",
     });
   } catch (error) {
-    console.error("Erro ao excluir cliente:", error);
     return res.status(400).json({
       success: false,
       error: "Erro ao excluir o cliente.",
@@ -502,8 +461,6 @@ app.get("/cadastro", async (req, res) => {
       error: null,
     });
   } catch (error) {
-    console.error("Erro ao buscar dados:", error.message);
-
     // Se for erro de autenticação, redirecionar para login
     if (isAuthError(error)) {
       return handleAuthError(req, res);
@@ -579,18 +536,12 @@ app.post("/cadastro", async (req, res) => {
     // Criar a peça na API Django
     const pecaResponse = await api.post("/pecas/", pecaData);
 
-    console.log("Peça cadastrada com sucesso:", pecaResponse.data);
-
     res.redirect("/cadastro?success=true");
   } catch (error) {
-    console.error("Erro ao cadastrar peça:", error);
-
     let errorMessage = "Erro ao cadastrar a peça. Tente novamente.";
 
     if (error.response) {
       // A API retornou um erro
-      console.error("Resposta de erro da API:", error.response.data);
-      console.error("Status:", error.response.status);
 
       if (error.response.status === 401) {
         errorMessage = "Sessão expirada. Faça login novamente.";
@@ -623,9 +574,7 @@ app.post("/cadastro", async (req, res) => {
         ops = Array.isArray(opsResponse.data)
           ? opsResponse.data
           : opsResponse.data.results || [];
-      } catch (opsError) {
-        console.warn("Aviso: Não foi possível buscar OPs:", opsError.message);
-      }
+      } catch (opsError) {}
 
       res.render("cadastro", {
         title: "Cadastro de Peças - UsinaSoft",
@@ -709,8 +658,6 @@ app.get("/indicadores", async (req, res) => {
       error: null,
     });
   } catch (error) {
-    console.error("Erro ao buscar indicadores:", error.message);
-
     // Se for erro de autenticação, redirecionar para login
     if (isAuthError(error)) {
       return handleAuthError(req, res);
@@ -766,10 +713,6 @@ app.get("/producao", async (req, res) => {
         criado_por_nome: usuariosMap[op.criado_por] || "N/A",
       }));
     } catch (userError) {
-      console.warn(
-        "Aviso: Não foi possível buscar dados de usuários:",
-        userError.message
-      );
       // Continue com os dados de produção mesmo se não conseguir os usuários
     }
 
@@ -788,8 +731,6 @@ app.get("/producao", async (req, res) => {
       formatDate,
     });
   } catch (error) {
-    console.error("Erro ao buscar dados de produção:", error.message);
-
     // Se for erro de autenticação, redirecionar para login
     if (isAuthError(error)) {
       return handleAuthError(req, res);
@@ -822,12 +763,6 @@ app.get("/ops/:id/detalhes", async (req, res) => {
     const opResponse = await api.get(`/ops/${id}/`);
     const op = opResponse.data;
 
-    console.log("OP encontrada:", op.id, op.codigo);
-
-    z;
-    console.log("URL de busca de peças:", `/pecas/?ordem_producao=${op.id}`);
-    console.log("Resposta de peças:", pecasResponse.data);
-
     const pecas = Array.isArray(pecasResponse.data)
       ? pecasResponse.data
       : pecasResponse.data.results || [];
@@ -849,8 +784,6 @@ app.get("/ops/:id/detalhes", async (req, res) => {
       error: null,
     });
   } catch (error) {
-    console.error("Erro ao buscar detalhes da OP:", error.message);
-
     // Se for erro de autenticação, redirecionar para login
     if (isAuthError(error)) {
       return handleAuthError(req, res);
@@ -883,7 +816,6 @@ app.get("/api/ops/:id", async (req, res) => {
     const opResponse = await api.get(`/ops/${id}/`);
     return res.json(opResponse.data);
   } catch (error) {
-    console.error("Erro ao buscar OP:", error);
     return res.status(400).json({
       success: false,
       error: "Erro ao buscar a ordem de produção.",
@@ -897,7 +829,6 @@ app.get("/api/usuarios", async (req, res) => {
     const usuariosResponse = await api.get("/usuarios/");
     return res.json(usuariosResponse.data);
   } catch (error) {
-    console.error("Erro ao buscar usuários:", error);
     return res.status(400).json({
       success: false,
       error: "Erro ao buscar usuários.",
@@ -933,7 +864,6 @@ app.put("/ops/:id", async (req, res) => {
       message: "Ordem de produção atualizada com sucesso!",
     });
   } catch (error) {
-    console.error("Erro ao atualizar OP:", error);
     let errorMessage = "Erro ao atualizar a ordem de produção.";
 
     if (error.response?.data) {
@@ -961,7 +891,6 @@ app.delete("/ops/:id", async (req, res) => {
       message: "Ordem de produção excluída com sucesso!",
     });
   } catch (error) {
-    console.error("Erro ao excluir OP:", error);
     return res.status(400).json({
       success: false,
       error: "Erro ao excluir a ordem de produção.",
@@ -1013,7 +942,6 @@ app.put("/pecas/:id", async (req, res) => {
       message: "Peça atualizada com sucesso!",
     });
   } catch (error) {
-    console.error("Erro ao atualizar peça:", error);
     let errorMessage = "Erro ao atualizar a peça.";
 
     if (error.response?.data) {
@@ -1041,7 +969,6 @@ app.delete("/pecas/:id", async (req, res) => {
       message: "Peça excluída com sucesso!",
     });
   } catch (error) {
-    console.error("Erro ao excluir peça:", error);
     return res.status(400).json({
       success: false,
       error: "Erro ao excluir a peça.",
@@ -1077,7 +1004,7 @@ app.get("/", (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`UsinaSoft rodando na porta ${PORT}`);
-  console.log(`Acesse: http://localhost:${PORT}`);
+app.listen(3000, () => {
+  console.log(`UsinaSoft rodando na porta 3000`);
+  console.log(`Acesse: http://localhost:3000`);
 });
